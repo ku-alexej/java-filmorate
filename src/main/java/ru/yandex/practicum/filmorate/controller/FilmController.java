@@ -62,9 +62,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List mostLiked(@RequestParam long count) {
+    public List mostLiked(@RequestParam(required = false) String count) {
         log.debug("Get /films/popular : запрос " + count + " популярных фильмов");
-        return filmService.getPopular(count);
+        if (count == null) {
+            return filmService.getPopular(10);
+        }
+        return filmService.getPopular(Long.parseLong(count));
     }
 
     @ExceptionHandler

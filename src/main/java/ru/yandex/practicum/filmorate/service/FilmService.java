@@ -10,7 +10,11 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -18,6 +22,7 @@ public class FilmService {
 
     private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private static final int MAX_FILM_DESCRIPTION = 200;
+    Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
 
     @Autowired
     FilmStorage filmStorage;
@@ -63,7 +68,16 @@ public class FilmService {
     }
 
     public List getPopular(long count) {
-        return filmStorage.getPopular(count);
+
+        if (filmStorage.allFilms().size() < count) {
+            count = filmStorage.allFilms().size();
+        }
+
+        Stream<Film> stream = filmStorage.allFilms().stream();
+        return stream
+                .sorted(likesComparator.reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     public void filmValidation(Film film) {
