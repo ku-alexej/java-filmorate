@@ -74,16 +74,4 @@ public class UserController {
         userService.removeFriend(userId, friendId);
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> incorrectUserId(final IdValidationException e) {
-        return Map.of("error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> validationFail(final ValidationException e) {
-        return Map.of("error", e.getMessage());
-    }
-
 }

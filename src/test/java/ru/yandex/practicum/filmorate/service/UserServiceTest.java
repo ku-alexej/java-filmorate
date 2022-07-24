@@ -1,23 +1,29 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserControllerTest {
-
-    private static UserController userController;
+@SpringBootTest
+@AutoConfigureMockMvc
+class UserServiceTest {
+    @Autowired
+    UserController userController;
     private static User user;
 
-//    @BeforeEach
-//    void beforeEach() {
-//        userController = new UserController(new InMemoryUserStorage());
-//        user = new User(1, "mail@ya.ru", "login", "name", LocalDate.of(2000, 1, 1));
-//    }
+    @BeforeEach
+    void beforeEach() {
+        userController = new UserController();
+        user = new User(1, "mail@ya.ru", "login", "name", LocalDate.of(2000, 1, 1));
+    }
 
     @Test
     void addCorrectUser() {
