@@ -17,8 +17,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     private Map<Long, Film> films = new HashMap<>();
     private long filmId = 1;
-    private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private static final int MAX_FILM_DESCRIPTION = 200;
 
     @Override
     public List<Film> allFilms() {
@@ -27,7 +25,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        filmValidation(film);
         film.setId(filmId);
         log.debug("Новому фильму присвоен ID: {}", film.getId());
         films.put(filmId, film);
@@ -38,7 +35,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        filmValidation(film);
         Film updatedFilm;
         if (films.containsKey(film.getId())) {
             updatedFilm = changeFilm(film);
@@ -57,20 +53,28 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void filmValidation(Film film) {
-        log.info("Валидация данных");
-        if (film.getName().isBlank()) {
-            throw new ValidationException("Название фильма не может быть пустым.");
-        }
-        if (film.getDescription().length() > MAX_FILM_DESCRIPTION) {
-            throw new ValidationException("Описание фильма больше " + MAX_FILM_DESCRIPTION + " символов.");
-        }
-        if (film.getReleaseDate().isBefore(FIRST_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза не может быть раньше " + FIRST_RELEASE_DATE + ".");
-        }
-        if (film.getDuration() < 0) {
-            throw new ValidationException("Продолжительность фильма не может быть отрицательной.");
-        }
-        log.info("Валидация пройдена");
+    public void deleteFilm(long filmId) {
+        films.remove(filmId);
     }
+
+    @Override
+    public void addLike(long filmId, long userId) {
+        films.get(filmId).getUsersId().add(userId);
+    }
+
+    @Override
+    public void removeLike(long filmId, long userId) {
+        films.get(filmId).getUsersId().remove(userId);
+    }
+
+    @Override
+    public List<Film> getPopular(long count) {
+        return null;
+    }
+
+    @Override
+    public Film getFilm(long filmId) {
+        return films.get(filmId);
+    }
+
 }

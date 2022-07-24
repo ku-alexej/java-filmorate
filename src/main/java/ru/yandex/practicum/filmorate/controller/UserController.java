@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IdValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -63,7 +64,7 @@ public class UserController {
 
     @DeleteMapping("/{userID}")
     public long deleteUser(@PathVariable long userId) {
-        log.debug("Delete /users/%d : удаление данных пользователя {}", userId);
+        log.debug("Delete /users/" + userId + " : удаление данных пользователя");
         return userService.deleteUser(userId);
     }
 
@@ -76,6 +77,12 @@ public class UserController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> incorrectUserId(final IdValidationException e) {
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> validationFail(final ValidationException e) {
         return Map.of("error", e.getMessage());
     }
 
