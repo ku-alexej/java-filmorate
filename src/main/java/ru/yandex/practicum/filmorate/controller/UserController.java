@@ -18,7 +18,7 @@ import java.util.Map;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @GetMapping()
     public List<User> allUsers() {
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends/common/{otherId}")
-    public List getMutualFriends(@PathVariable long userId, @PathVariable long otherId) {
+    public List<User> getMutualFriends(@PathVariable long userId, @PathVariable long otherId) {
         log.debug("Get /users/" + userId + "/friends/common/" + otherId + " : получение общих друзей");
         return userService.mutualFriends(userId, otherId);
     }

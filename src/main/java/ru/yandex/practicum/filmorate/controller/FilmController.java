@@ -18,7 +18,7 @@ import java.util.Map;
 public class FilmController {
 
     @Autowired
-    FilmService filmService;
+    private FilmService filmService;
 
     @GetMapping()
     public List<Film> allFilms() {
@@ -62,7 +62,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List mostLiked(@RequestParam(required = false) String count) {
+    public List<Film> mostLiked(@RequestParam(required = false) String count) {
         log.debug("Get /films/popular : запрос " + count + " популярных фильмов");
         if (count == null) {
             return filmService.getPopular(10);

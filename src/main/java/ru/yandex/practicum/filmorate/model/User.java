@@ -24,8 +24,4 @@ public class User {
     private LocalDate birthday;
     @JsonIgnore
     private final Set<Long> friendsId = new HashSet<Long>();
-
-    public Set<Long> getFriendsId() {
-        return friendsId;
-    }
 }

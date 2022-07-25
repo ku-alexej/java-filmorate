@@ -21,11 +21,6 @@ public class Film {
     private LocalDate releaseDate;
     @NonNull
     private int duration;
-
     @JsonIgnore
     private final Set<Long> usersId = new HashSet<Long>();
-
-    public Set<Long> getUsersId() {
-        return usersId;
-    }
 }

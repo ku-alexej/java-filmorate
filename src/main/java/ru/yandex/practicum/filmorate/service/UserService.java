@@ -18,7 +18,7 @@ import java.util.List;
 public class UserService {
 
     @Autowired
-    UserStorage userStorage;
+    private UserStorage userStorage;
 
     public List<User> allUsers() {
         return userStorage.allUsers();
@@ -61,7 +61,7 @@ public class UserService {
         return List.copyOf(userStorage.getFriends(userId));
     }
 
-    public List mutualFriends(long userId, long otherId) {
+    public List<User> mutualFriends(long userId, long otherId) {
         userIdValidation(userId);
         userIdValidation(otherId);
         List<User> userFriends = List.copyOf(userStorage.getFriends(userId));
@@ -69,7 +69,7 @@ public class UserService {
         List<User> mutualFriends = new ArrayList<>();
 
         if (userFriends == null || friendsOfFriend == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         for (User friend : userFriends) {

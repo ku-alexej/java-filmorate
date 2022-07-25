@@ -22,13 +22,13 @@ public class FilmService {
 
     private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private static final int MAX_FILM_DESCRIPTION = 200;
-    Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
+    private static Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
 
     @Autowired
-    FilmStorage filmStorage;
+    private FilmStorage filmStorage;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     public List<Film> allFilms() {
         return filmStorage.allFilms();
@@ -67,14 +67,13 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List getPopular(long count) {
+    public List<Film> getPopular(long count) {
 
         if (filmStorage.allFilms().size() < count) {
             count = filmStorage.allFilms().size();
         }
 
-        Stream<Film> stream = filmStorage.allFilms().stream();
-        return stream
+        return filmStorage.allFilms().stream()
                 .sorted(likesComparator.reversed())
                 .limit(count)
                 .collect(Collectors.toList());
