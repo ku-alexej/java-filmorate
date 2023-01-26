@@ -1,21 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
 public class Film {
     private long id;
-    @NonNull
+    @NotNull
     private String name;
-    @NonNull
+    @NotNull
     private String description;
-    @NonNull
+    @NotNull
     private LocalDate releaseDate;
-    @NonNull
+    @PositiveOrZero
     private int duration;
+    @JsonIgnore
+    private final Set<Long> usersId = new HashSet<Long>();
 }

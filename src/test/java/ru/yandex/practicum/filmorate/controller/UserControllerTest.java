@@ -2,121 +2,127 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import org.springframework.http.HttpStatus;
+
+
+import static org.hamcrest.CoreMatchers.*;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
-import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class UserControllerTest {
 
-    private static UserController userController;
-    private static User user;
+    @Autowired
+    private TestRestTemplate restTemplate;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UserStorage userStorage;
+    @Autowired
+    private ErrorHandler errorHandler;
+
+    private User user;
 
     @BeforeEach
     void beforeEach() {
-        userController = new UserController();
         user = new User(1, "mail@ya.ru", "login", "name", LocalDate.of(2000, 1, 1));
     }
 
     @Test
     void addCorrectUser() {
-        userController.addUser(user);
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
 
-        assertEquals(1, userController.allUsers().size(), "Пользователь не добавлен.");
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getId(), notNullValue());
+        assertThat(response.getBody().getEmail(), is("mail@ya.ru"));
+        assertThat(response.getBody().getLogin(), is("login"));
+        assertThat(response.getBody().getName(), is("name"));
+        assertThat(response.getBody().getBirthday(), is(LocalDate.of(2000, 1, 1)));
     }
 
     @Test
     void addUserWithEmptyMail() {
         user.setEmail("");
 
-        try {
-            userController.addUser(user);
-            fail("Не ловит исключение в почте.");
-        }
-        catch (Exception e) {
-            final String expected = "Почта не может быть пустой и должна содержать символ «@».";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addUserWithMailWithoutAtSign() {
         user.setEmail("mailya.ru");
 
-        try {
-            userController.addUser(user);
-            fail("Не ловит исключение в почте.");
-        }
-        catch (Exception e) {
-            final String expected = "Почта не может быть пустой и должна содержать символ «@».";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addUserWithEmptyLogin() {
         user.setLogin("");
 
-        try {
-            userController.addUser(user);
-            fail("Не ловит исключение в логине.");
-        }
-        catch (Exception e) {
-            final String expected = "Логин не может быть пустым и не может содержать пробелы.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
-    void addUserWithLoginWithSopace() {
+    void addUserWithLoginWithSpace() {
         user.setLogin("log in");
 
-        try {
-            userController.addUser(user);
-            fail("Не ловит исключение в логине.");
-        }
-        catch (Exception e) {
-            final String expected = "Логин не может быть пустым и не может содержать пробелы.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addUserWithoutName() {
         user.setName("");
-        userController.addUser(user);
 
-        assertEquals(user.getLogin(), user.getName(), "Не заменяет пустое имя на логин.");
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("login"));
     }
 
     @Test
     void addUserWithBirthdayInFuture() {
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        try {
-            userController.addUser(user);
-            fail("Не ловит исключение в дате рождения.");
-        }
-        catch (Exception e) {
-            final String expected = "Дата рождения не может быть в будущем.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addUserWithBirthdayNow() {
         user.setBirthday(LocalDate.now());
-        userController.addUser(user);
 
-        assertEquals(1, userController.allUsers().size(), "Пользователь не добавлен.");
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     void addUserWithBirthdayBeforeNow() {
         user.setBirthday(LocalDate.now().minusDays(1));
-        userController.addUser(user);
 
-        assertEquals(1, userController.allUsers().size(), "Пользователь не добавлен.");
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
 }

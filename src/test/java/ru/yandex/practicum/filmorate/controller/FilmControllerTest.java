@@ -2,61 +2,81 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Assert;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FilmControllerTest {
-    private static FilmController filmController;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+    @Autowired
+    private FilmService filmService;
+    @Autowired
+    private FilmStorage filmStorage;
+    @Autowired
+    private ErrorHandler errorHandler;
+
     private static Film film;
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController();
         film = new Film(1, "name", "description", LocalDate.of(1895, 12, 28), 10);
     }
 
     @Test
     void addCorrectFilm() {
-        filmController.addFilm(film);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
 
-        assertEquals(1, filmController.allFilms().size(), "Фильм не добавлен.");
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getId(), notNullValue());
+        assertThat(response.getBody().getName(), is("name"));
+        assertThat(response.getBody().getDescription(), is("description"));
+        assertThat(response.getBody().getReleaseDate(), is(LocalDate.of(1895, 12, 28)));
+        assertThat(response.getBody().getDuration(), is(10));
     }
 
     @Test
     void addFilmWithEmptyName() {
         film.setName("");
 
-        try {
-            filmController.addFilm(film);
-            fail("Не ловит исключение в названии.");
-            }
-        catch (Exception e) {
-            final String expected = "Название фильма не может быть пустым.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addFilmWithMaxDescription() {
         String symbols = "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "0123456789" +
-                        "0123456789" + "012345678";
-
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "0123456789" +
+                "0123456789" + "012345678";
         film.setDescription(symbols);
-        filmController.addFilm(film);
 
-        assertEquals(1, filmController.allFilms().size(), "Фильм не добавлен.");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
@@ -75,14 +95,9 @@ class FilmControllerTest {
 
         film.setDescription(symbols);
 
-        try {
-            filmController.addFilm(film);
-            fail("Не ловит исключение в описании.");
-        }
-        catch (Exception e) {
-            final String expected = "Описание фильма больше 200 символов.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
@@ -90,52 +105,45 @@ class FilmControllerTest {
 
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
 
-        try {
-            filmController.addFilm(film);
-            fail("Не ловит исключение в дате релиза.");
-        }
-        catch (Exception e) {
-            final String expected = "Дата релиза не может быть раньше " + LocalDate.of(1895, 12, 28) + ".";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addFilmWithReleaseDateEqualFirsRelease() {
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        filmController.addFilm(film);
 
-        assertEquals(1, filmController.allFilms().size(), "Фильм не добавлен.");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     void addFilmWithReleaseDateAfterFirsRelease() {
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
-        filmController.addFilm(film);
 
-        assertEquals(1, filmController.allFilms().size(), "Фильм не добавлен.");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     void addFilmWithNegativeDuration() {
         film.setDuration(-1);
 
-        try {
-            filmController.addFilm(film);
-            fail("Не ловит исключение в продолжительности.");
-        }
-        catch (Exception e) {
-            final String expected = "Продолжительность фильма не может быть отрицательной.";
-            assertEquals(expected, e.getMessage(), "Не верное исключение.");
-        }
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void addFilmWithZeroDuration() {
         film.setDuration(0);
-        filmController.addFilm(film);
 
-        assertEquals(1, filmController.allFilms().size(), "Фильм не добавлен.");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
 }
