@@ -47,7 +47,6 @@ public class UserDBStorage implements UserStorage {
             }
             return stmt;
         }, keyHolder);
-        log.debug("Пользователь сохранен");
         user.setId(keyHolder.getKey().longValue());
         log.debug("Новому пользователю присвоен ID: {}", user.getId());
         return user;

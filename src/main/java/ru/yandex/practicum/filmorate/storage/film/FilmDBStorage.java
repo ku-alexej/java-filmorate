@@ -80,10 +80,6 @@ public class FilmDBStorage implements FilmStorage{
     private void updateFilmGenres(Film film) {
         deleteFilmGenres(film);
         addFilmGenres(film);
-
-//        if (film.getGenres().size() > 0) {
-//            addFilmGenres(film);
-//        }
     }
 
     private void addFilmGenres(Film film) {

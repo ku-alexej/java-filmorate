@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+//@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 //	private final UserDBStorage userStorage;
 

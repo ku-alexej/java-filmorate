@@ -23,33 +23,25 @@ public class GenreDBStorage implements GenreStorage{
 
     @Override
     public List<Genre> allGenres() {
-        log.debug("try allGenre");
         final String sqlQuery = "select GENRE_ID, GENRE_NAME " +
                                 "from GENRES";
-        log.debug("Build and return all genres");
         return jdbcTemplate.query(sqlQuery, this::mapRowToGenre);
     }
 
     @Override
     public Genre getGenre(int genreId) {
-        log.debug("Try GetGenre");
         return getGenreFromDB(genreId);
     }
 
     private Genre getGenreFromDB(int genreId) {
-        log.debug("Try getGenreFromDB");
         String sqlQuery = "select count(GENRE_ID) " +
                         "from GENRES " +
                         "where GENRE_ID = ?";
         int count = jdbcTemplate.queryForObject(sqlQuery, new Object[]{genreId}, Integer.class);
-        log.debug("count != 1");
         if(count !=1)
         {
-            log.debug("count != 1 DONE");
             return null;
         }
-        log.debug("count != 1 FAIL");
-        log.debug("Prepare Genre");
 
         sqlQuery = "select GENRE_ID, GENRE_NAME " +
                 "from GENRES " +
@@ -58,7 +50,6 @@ public class GenreDBStorage implements GenreStorage{
     }
 
     private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
-        log.debug("Return Genre");
         return Genre.builder()
                 .id(resultSet.getInt("GENRE_ID"))
                 .name(resultSet.getString("GENRE_NAME"))
