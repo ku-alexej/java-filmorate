@@ -2,19 +2,17 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.IdValidationException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -25,6 +23,7 @@ public class FilmService {
     private static Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
 
     @Autowired
+    @Qualifier("FilmDBStorage")
     private FilmStorage filmStorage;
 
     @Autowired
@@ -106,4 +105,5 @@ public class FilmService {
         }
         log.info("Валидация ID фильма пройдена");
     }
+
 }

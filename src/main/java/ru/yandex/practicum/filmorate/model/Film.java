@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@Builder
 @AllArgsConstructor
 public class Film {
     private long id;
@@ -22,6 +24,8 @@ public class Film {
     private LocalDate releaseDate;
     @PositiveOrZero
     private int duration;
+    private Mpa mpa;
+    private Set<Genre> genres = new HashSet<>();
     @JsonIgnore
-    private final Set<Long> usersId = new HashSet<Long>();
+    private Set<Long> usersId = new HashSet<>();
 }
