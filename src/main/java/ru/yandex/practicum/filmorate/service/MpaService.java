@@ -4,11 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.IdValidationException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,18 +24,8 @@ public class MpaService {
     }
 
     public Mpa getMpa(int mpaId) {
-        mpaIdValidation(mpaId);
-        return mpaStorage.getMpa(mpaId);
+        return Optional.ofNullable(mpaStorage.getMpa(mpaId))
+                .orElseThrow(() -> new EntityNotFoundException("Mpa с ID " + mpaId + " не существует"));
     }
 
-    private void mpaIdValidation(int mpaId) {
-        log.info("Валидация данных ID mpa");
-        if (mpaId <= 0) {
-            throw new IdValidationException("ID должен быть больше нуля.");
-        }
-        if (mpaStorage.getMpa(mpaId) == null) {
-            throw new IdValidationException("Mpa с ID " + mpaId + " не существует.");
-        }
-        log.info("Валидация ID mpa пройдена");
-    }
 }

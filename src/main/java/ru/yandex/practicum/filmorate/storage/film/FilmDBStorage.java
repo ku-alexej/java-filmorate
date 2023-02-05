@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -171,18 +172,14 @@ public class FilmDBStorage implements FilmStorage{
     }
 
     private Film getFilmFromDB(long filmId) {
-        String sqlQuery = "select count(FILM_ID) " +
-                          "from FILMS " +
-                          "where FILM_ID = ?";
-        int count = jdbcTemplate.queryForObject(sqlQuery, new Object[] {filmId}, Integer.class);
-        if (count != 1) {
-            return null;
-        }
-
-        sqlQuery = "select FILM_ID, FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID " +
+        String sqlQuery = "select FILM_ID, FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID " +
                    "from FILMS " +
                    "where FILM_ID = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, filmId);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {

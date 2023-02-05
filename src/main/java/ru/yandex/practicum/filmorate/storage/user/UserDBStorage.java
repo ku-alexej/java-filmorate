@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -119,18 +120,18 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public User getUser(long userId) {
-        User userFromDB = getUserFromDB(userId);
-        return userFromDB;
+        return getUserFromDB(userId);
     }
 
     private User getUserFromDB(long userId) {
-        String sqlQuery = "SELECT count(USER_ID) FROM USERS WHERE USER_ID = ?";
-        int count = jdbcTemplate.queryForObject(sqlQuery, new Object[] {userId}, Integer.class);
-        if (count != 1) {
+        String sqlQuery = "select USER_ID, EMAIL, LOGIN, USER_NAME, BIRTHDAY " +
+                "from USERS " +
+                "where USER_ID = ?";
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, userId);
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
-        sqlQuery = "select USER_ID, EMAIL, LOGIN, USER_NAME, BIRTHDAY from USERS where USER_ID = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, userId);
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.IdValidationException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -98,10 +98,10 @@ public class FilmService {
     public void filmIdValidation(long filmId) {
         log.info("Валидация данных ID фильма");
         if (filmId <= 0) {
-            throw new IdValidationException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("ID должен быть больше нуля.");
         }
         if (filmStorage.getFilm(filmId) == null) {
-            throw new IdValidationException("Фильм с ID " + filmId + " не существует.");
+            throw new EntityNotFoundException("Фильм с ID " + filmId + " не существует.");
         }
         log.info("Валидация ID фильма пройдена");
     }

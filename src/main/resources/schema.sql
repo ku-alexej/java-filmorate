@@ -1,13 +1,3 @@
---drop table MPAS, FILMS, GENRES, FILMS_GENRES, USERS, FRIENDS, LIKES;
-
---drop table if exists FILMS_GENRES;
---drop table if exists LIKES;
---drop table if exists FRIENDS;
---drop table if exists FILMS;
---drop table if exists MPAS;
---drop table if exists GENRES;
---drop table if exists USERS;
-
 drop table if exists FILMS_GENRES, LIKES, FRIENDS, FILMS, MPAS, GENRES, USERS;
 
 create table if not exists MPAS (

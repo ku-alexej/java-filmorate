@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.IdValidationException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -106,10 +106,10 @@ public class UserService {
     public void userIdValidation(long userId) {
         log.info("Валидация данных ID пользователя");
         if (userId <= 0) {
-            throw new IdValidationException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("ID должен быть больше нуля.");
         }
         if (userStorage.getUser(userId) == null) {
-            throw new IdValidationException("Пользователь с ID " + userId + " не существует.");
+            throw new EntityNotFoundException("Пользователь с ID " + userId + " не существует.");
         }
         log.info("Валидация ID пользователя пройдена");
     }

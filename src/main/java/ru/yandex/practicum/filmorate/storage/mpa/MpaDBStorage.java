@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.mpa;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -34,19 +35,14 @@ public class MpaDBStorage implements MpaStorage {
     }
 
     private Mpa getMpaFromDB(int mpaId) {
-        String sqlQuery = "select count(MPA_ID) " +
+        String sqlQuery = "select MPA_ID, MPA_NAME " +
                           "from MPAS " +
                           "where MPA_ID = ?";
-        int count = jdbcTemplate.queryForObject(sqlQuery, new Object[]{mpaId}, Integer.class);
-        if(count !=1)
-        {
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, mpaId);
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
-
-        sqlQuery = "select MPA_ID, MPA_NAME " +
-                          "from MPAS " +
-                          "where MPA_ID = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, mpaId);
     }
 
     private Mpa mapRowToMpa(ResultSet resultSet, int rowNum) throws SQLException {
