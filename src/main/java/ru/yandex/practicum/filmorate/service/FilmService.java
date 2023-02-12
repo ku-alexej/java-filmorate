@@ -2,19 +2,17 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.IdValidationException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -25,6 +23,7 @@ public class FilmService {
     private static Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
 
     @Autowired
+    @Qualifier("FilmDBStorage")
     private FilmStorage filmStorage;
 
     @Autowired
@@ -99,11 +98,12 @@ public class FilmService {
     public void filmIdValidation(long filmId) {
         log.info("Валидация данных ID фильма");
         if (filmId <= 0) {
-            throw new IdValidationException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("ID должен быть больше нуля.");
         }
         if (filmStorage.getFilm(filmId) == null) {
-            throw new IdValidationException("Фильм с ID " + filmId + " не существует.");
+            throw new EntityNotFoundException("Фильм с ID " + filmId + " не существует.");
         }
         log.info("Валидация ID фильма пройдена");
     }
+
 }

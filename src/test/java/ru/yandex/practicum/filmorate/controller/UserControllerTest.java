@@ -4,24 +4,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-import org.springframework.http.HttpStatus;
-
-
-import static org.hamcrest.CoreMatchers.*;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureTestDatabase
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:schema.sql")
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:data.sql")
 class UserControllerTest {
 
     @Autowired
@@ -29,6 +33,7 @@ class UserControllerTest {
     @Autowired
     private UserService userService;
     @Autowired
+    @Qualifier("UserDBStorage")
     private UserStorage userStorage;
     @Autowired
     private ErrorHandler errorHandler;
@@ -37,7 +42,7 @@ class UserControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        user = new User(1, "mail@ya.ru", "login", "name", LocalDate.of(2000, 1, 1));
+        user = new User(0, "mail@ya.ru", "login", "name", LocalDate.of(2000, 1, 1));
     }
 
     @Test
@@ -45,7 +50,7 @@ class UserControllerTest {
         ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody().getId(), notNullValue());
+        assertThat(response.getBody().getId(), is(1L));
         assertThat(response.getBody().getEmail(), is("mail@ya.ru"));
         assertThat(response.getBody().getLogin(), is("login"));
         assertThat(response.getBody().getName(), is("name"));

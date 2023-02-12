@@ -4,23 +4,29 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureTestDatabase
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:schema.sql")
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:data.sql")
 class FilmControllerTest {
 
     @Autowired
@@ -28,15 +34,19 @@ class FilmControllerTest {
     @Autowired
     private FilmService filmService;
     @Autowired
+    @Qualifier("FilmDBStorage")
     private FilmStorage filmStorage;
     @Autowired
     private ErrorHandler errorHandler;
 
     private static Film film;
+    private static Mpa mpa;
 
     @BeforeEach
     void beforeEach() {
-        film = new Film(1, "name", "description", LocalDate.of(1895, 12, 28), 10);
+        mpa = new Mpa(1, null);
+        film = new Film(0, "name", "description",
+                LocalDate.of(1895, 12, 28), 10, mpa, null, null);
     }
 
     @Test
@@ -44,7 +54,7 @@ class FilmControllerTest {
         ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody().getId(), notNullValue());
+        assertThat(response.getBody().getId(), is(1L));
         assertThat(response.getBody().getName(), is("name"));
         assertThat(response.getBody().getDescription(), is("description"));
         assertThat(response.getBody().getReleaseDate(), is(LocalDate.of(1895, 12, 28)));
