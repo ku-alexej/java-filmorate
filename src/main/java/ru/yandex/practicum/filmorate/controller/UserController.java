@@ -58,10 +58,10 @@ public class UserController {
         return userService.mutualFriends(userId, otherId);
     }
 
-    @DeleteMapping("/{userID}")
-    public long deleteUser(@PathVariable long userId) {
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable long userId) {
         log.debug("Delete /users/" + userId + " : удаление данных пользователя");
-        return userService.deleteUser(userId);
+        userService.deleteUser(userId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
