@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.*;
@@ -76,17 +77,10 @@ public class UserDBStorage implements UserStorage {
     }
 
     @Override
-    public long deleteUser(long userId) {
+    public void deleteUser(long userId) {
         String sqlQuery = "delete from USERS where USER_ID = ?";
         jdbcTemplate.update(sqlQuery, userId);
         log.debug("Удален пользователь с ID: {}", userId);
-        sqlQuery = "delete from LIKES where USER_ID = ?";
-        jdbcTemplate.update(sqlQuery, userId);
-        log.debug("Удалены лайки пользователя с ID: {}", userId);
-        sqlQuery = "delete from FRIENDS where USER_ID = ? or FRIEND_ID = ?";
-        jdbcTemplate.update(sqlQuery, userId, userId);
-        log.debug("Удалена дружба с пользователем с ID: {}", userId);
-        return userId;
     }
 
     @Override
