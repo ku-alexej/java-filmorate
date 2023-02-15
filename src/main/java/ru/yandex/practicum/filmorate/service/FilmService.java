@@ -106,4 +106,9 @@ public class FilmService {
         log.info("Валидация ID фильма пройдена");
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        userService.userIdValidation(userId);
+        userService.userIdValidation(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }
