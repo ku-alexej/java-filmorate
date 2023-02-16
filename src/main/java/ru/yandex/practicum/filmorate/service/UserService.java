@@ -48,9 +48,9 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
-    public long deleteUser(long userId) {
+    public void deleteUser(long userId) {
         userIdValidation(userId);
-        return userStorage.deleteUser(userId);
+        userStorage.deleteUser(userId);
     }
 
     public void addFriend(long userId, long friendId) {
