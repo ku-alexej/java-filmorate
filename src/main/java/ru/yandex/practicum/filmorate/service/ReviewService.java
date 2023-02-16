@@ -18,7 +18,6 @@ public class ReviewService {
 
     private static final Comparator<Review> marksComparator = Comparator.comparing(Review::getUseful);
 
-
     @Autowired
     private ReviewStorage reviewStorage;
 

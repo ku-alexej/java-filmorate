@@ -62,22 +62,6 @@ public class ReviewDBStorage implements ReviewStorage {
         return getReview(review.getReviewId());
     }
 
-//    @Override
-//    public Review updateReview(Review review) {
-//        log.debug("Обновлен отзыва с ID: {}", review.getReviewId());
-//        final String sqlQuery = "update REVIEWS set " +
-//                "CONTENT = ?, IS_POSITIVE = ?, USER_ID = ?, FILM_ID = ?" +
-//                "where REVIEW_ID = ?";
-//
-//        jdbcTemplate.update(sqlQuery,
-//                review.getContent(),
-//                review.getIsPositive(),
-//                review.getUserId(),
-//                review.getFilmId(),
-//                review.getReviewId());
-//        return review;
-//    }
-
     @Override
     public void deleteReview(long reviewId) {
         String sqlQuery = "delete from REVIEWS " +
