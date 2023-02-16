@@ -16,10 +16,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -160,6 +158,21 @@ public class FilmDBStorage implements FilmStorage {
     @Override
     public Film getFilm(long filmId) {
         return getFilmFromDB(filmId);
+    }
+
+    @Override
+    public List<Film> getLikedFilm(long userId) {
+        String sqlQuery = "select FILM_ID " +
+                "from LIKES " +
+                "where USER_ID = ?";
+
+        Collection<Long> filmList = jdbcTemplate.queryForList(sqlQuery, Long.class, userId);
+
+        if(!filmList.isEmpty()) {
+            return filmList.stream().map(this::getFilm).collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     private Film getFilmFromDB(long filmId) {

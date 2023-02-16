@@ -6,13 +6,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,6 +24,10 @@ public class UserService {
     @Qualifier("UserDBStorage")
     private UserStorage userStorage;
 
+    @Autowired
+    @Qualifier("FilmDBStorage")
+    private FilmStorage filmStorage;
+
     public List<User> allUsers() {
         return userStorage.allUsers();
     }
@@ -30,6 +36,7 @@ public class UserService {
         userValidation(user);
         return userStorage.addUser(user);
     }
+
     public User getUser(long userId) {
         userIdValidation(userId);
         return userStorage.getUser(userId);
@@ -81,6 +88,48 @@ public class UserService {
         }
 
         return mutualFriends;
+    }
+
+    //to-do попробовать сделать запрос sql вместо логики java
+    public List<Film> getRecommendations(long userId) {
+        userIdValidation(userId);
+
+        List<Film> recommendations = new ArrayList<>();
+        User user = getUser(userId);
+
+        List<Film> getLikedFilms = filmStorage.getLikedFilm(user.getId());
+
+        List<User> getAllUsers = allUsers();
+        getAllUsers.remove(user);
+
+        Map<User, List<Film>> getUsersLikedFilms = getAllUsers.stream()
+                .collect(Collectors.toMap(Function.identity(), u -> (filmStorage.getLikedFilm(u.getId()))));
+
+        int maxFreq = 0;
+        Map<User, Integer> similarLikeUser = new HashMap<>();
+
+        for (Map.Entry<User, List<Film>> entry : getUsersLikedFilms.entrySet()) {
+            int freq = 0;
+            for (Film film : entry.getValue()) {
+                if(getLikedFilms.contains(film)) {
+                    freq ++;
+                }
+            }
+            if (freq > maxFreq) {
+                maxFreq = freq;
+            }
+            similarLikeUser.put(entry.getKey(), freq);
+        }
+
+        for (Map.Entry<User, Integer> entry : similarLikeUser.entrySet()) {
+            if(getUsersLikedFilms.get(entry.getKey()).size() > maxFreq) {
+                List<Film> recFilms = getUsersLikedFilms.get(entry.getKey());
+                recFilms.removeAll(getLikedFilms);
+                recommendations.addAll(recFilms);
+            }
+        }
+
+        return recommendations;
     }
 
     public void userValidation(User user) {
