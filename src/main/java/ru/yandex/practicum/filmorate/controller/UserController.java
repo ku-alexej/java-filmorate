@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -58,16 +59,22 @@ public class UserController {
         return userService.mutualFriends(userId, otherId);
     }
 
-    @DeleteMapping("/{userID}")
-    public long deleteUser(@PathVariable long userId) {
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable long userId) {
         log.debug("Delete /users/" + userId + " : удаление данных пользователя");
-        return userService.deleteUser(userId);
+        userService.deleteUser(userId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
     public void removeFriend(@PathVariable long userId, @PathVariable long friendId) {
         log.debug("Post /users/" + userId + "/friends/" + friendId + " : удаление из друзей");
         userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long userId) {
+        log.debug("Get /users/" + userId + "/recommendations : рекомендация фильмов");
+        return userService.getRecommendations(userId);
     }
 
 }
