@@ -7,9 +7,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.sql.Date;
@@ -175,6 +179,32 @@ public class FilmDBStorage implements FilmStorage {
         }
     }
 
+    @Override
+    public Set<Director> getDirectorBySort(Long directorId, String sort) {
+        String sqlQuerySortByYear = "SELECT fd.film_id " +
+                "FROM FILMS_DIRECTORS fd " +
+                "JOIN FILMS f on fd.film_id = f.FILM_ID " +
+                "WHERE fd.director_id = ? " +
+                "ORDER BY f.RELEASE_DATA";
+
+        String sqlQuerySortByLikes = "SELECT fd.film_id " +
+                "FROM FILMS_DIRECTORS fd " +
+                "LEFT JOIN LIKES l ON fd.film_id = l.FILM_ID " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY fd.film_id, l.USER_ID " +
+                "ORDER BY COUNT(l.USER_ID) DESC";
+
+        if(sort.equals("year")) {
+            return jdbcTemplate.query(sqlQuerySortByYear, this:: mapFilm, directorId); //
+        } else {
+            return jdbcTemplate.query(sqlQuerySortByLikes, this:: mapFilm, directorId);
+        }
+    }
+
+    private Film mapFilm(ResultSet row, int rowNum) throws SQLException {
+
+    }
+
     private Film getFilmFromDB(long filmId) {
         String sqlQuery = "select FILM_ID, FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID " +
                 "from FILMS " +
@@ -195,8 +225,18 @@ public class FilmDBStorage implements FilmStorage {
                 .duration(resultSet.getInt("DURATION"))
                 .mpa(mpaStorage.getMpa(resultSet.getInt("MPA_ID")))
                 .genres(getFilmGenresFromDB(resultSet.getLong("FILM_ID")))
+                .directors(getFilmDirectorsFromDB(resultSet.getLong("film_id")))
                 .usersId(getUsersLikesFromDB(resultSet.getLong("FILM_ID")))
                 .build();
+    }
+
+    private Set<Director> getFilmDirectorsFromDB(long filmid) {
+        String sqlQuery = "SELECT d.id, d.name " +
+                "FROM FILMS_DIRECTORS AS fd " +
+                "JOIN DIRECTORS AS d on fd.director_id = d.id " +
+                "WHERE fd.film_id = ? " +
+                "GROUP BY d.id";
+        return new HashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToDirector, filmid));
     }
 
     private Set<Genre> getFilmGenresFromDB(long filmId) {
@@ -211,6 +251,13 @@ public class FilmDBStorage implements FilmStorage {
         return Genre.builder()
                 .id(resultSet.getInt("GENRE_ID"))
                 .name(resultSet.getString("GENRE_NAME"))
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(rs.getLong("id"))
+                .name(rs.getString("name"))
                 .build();
     }
 
