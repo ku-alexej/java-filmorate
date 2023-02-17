@@ -20,7 +20,9 @@ public class FilmService {
 
     private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private static final int MAX_FILM_DESCRIPTION = 200;
-    private static Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
+    private static final Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
+    private static final Comparator<Film> releaseDateComparator = Comparator.comparing(obj -> obj.getReleaseDate());
+
 
     @Autowired
     @Qualifier("FilmDBStorage")
@@ -28,6 +30,9 @@ public class FilmService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DirectorService directorService;
 
     public List<Film> allFilms() {
         return filmStorage.allFilms();
@@ -110,5 +115,21 @@ public class FilmService {
         userService.userIdValidation(userId);
         userService.userIdValidation(friendId);
         return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getDirectorsFilmSorted(long directorId, String sortBy) {
+        directorService.validateDirectorId(directorId);
+        switch (sortBy) {
+            case "likes":
+                return filmStorage.allDirectorsFilms(directorId).stream()
+                        .sorted(likesComparator.reversed())
+                        .collect(Collectors.toList());
+            case "year":
+                return filmStorage.allDirectorsFilms(directorId).stream()
+                        .sorted(releaseDateComparator)
+                        .collect(Collectors.toList());
+            default:
+                throw new EntityNotFoundException("Тип сортировки не найден.");
+        }
     }
 }

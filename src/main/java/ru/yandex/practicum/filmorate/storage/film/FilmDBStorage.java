@@ -62,7 +62,10 @@ public class FilmDBStorage implements FilmStorage {
         }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         if (film.getGenres() != null) {
-            updateFilmGenres(film);
+            addFilmGenres(film);
+        }
+        if (film.getDirectors() != null) {
+            addFilmDirectors(film);
         }
         log.debug("Новому фильму присвоен ID: {}", film.getId());
         return film;
@@ -75,6 +78,11 @@ public class FilmDBStorage implements FilmStorage {
             deleteFilmGenres(film);
         } else {
             updateFilmGenres(film);
+        }
+        if (film.getDirectors() == null) {
+            deleteFilmDirectors(film);
+        } else {
+            updateFilmDirectors(film);
         }
         log.debug("Обновлен фильм с ID: {}", film.getId());
         return getFilm(film.getId());
@@ -106,6 +114,34 @@ public class FilmDBStorage implements FilmStorage {
                 "where FILM_ID = ?";
         int i = jdbcTemplate.update(sqlQuery, film.getId());
         log.debug("Для фильма с ID {} удалено {} жанров", film.getId(), i);
+    }
+
+    private void updateFilmDirectors(Film film) {
+        deleteFilmDirectors(film);
+        addFilmDirectors(film);
+    }
+
+    private void addFilmDirectors(Film f) {
+        final String sqlQuery = "insert into FILMS_DIRECTORS (DIRECTOR_ID, FILM_ID) " +
+                "values (?, ?) ";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        Set<Director> directors = f.getDirectors();
+
+        for (Director d : directors) {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"ID"});
+                stmt.setLong(1, d.getId());
+                stmt.setLong(2, f.getId());
+                return stmt;
+            }, keyHolder);
+        }
+    }
+
+    private void deleteFilmDirectors(Film film) {
+        String sqlQuery = "delete from FILMS_DIRECTORS " +
+                "where film_id = ?";
+        int i = jdbcTemplate.update(sqlQuery, film.getId());
+        log.debug("Для фильма с ID {} удалено {} режиссеров", film.getId(), i);
     }
 
     @Override
@@ -172,7 +208,7 @@ public class FilmDBStorage implements FilmStorage {
 
         Collection<Long> filmList = jdbcTemplate.queryForList(sqlQuery, Long.class, userId);
 
-        if(!filmList.isEmpty()) {
+        if (!filmList.isEmpty()) {
             return filmList.stream().map(this::getFilm).collect(Collectors.toList());
         } else {
             return new ArrayList<>();
@@ -180,29 +216,18 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Director> getDirectorBySort(Long directorId, String sort) {
-        String sqlQuerySortByYear = "SELECT fd.film_id " +
+    public List<Film> allDirectorsFilms(long directorId) {
+        String sqlQuery = "SELECT f.FILM_ID as FILM_ID, f.FILM_NAME as FILM_NAME, " +
+                "f.DESCRIPTION as DESCRIPTION, f.RELEASE_DATE as RELEASE_DATE, " +
+                "f.DURATION as DURATION, f.MPA_ID as MPA_ID " +
                 "FROM FILMS_DIRECTORS fd " +
                 "JOIN FILMS f on fd.film_id = f.FILM_ID " +
-                "WHERE fd.director_id = ? " +
-                "ORDER BY f.RELEASE_DATA";
-
-        String sqlQuerySortByLikes = "SELECT fd.film_id " +
-                "FROM FILMS_DIRECTORS fd " +
-                "LEFT JOIN LIKES l ON fd.film_id = l.FILM_ID " +
-                "WHERE fd.director_id = ? " +
-                "GROUP BY fd.film_id, l.USER_ID " +
-                "ORDER BY COUNT(l.USER_ID) DESC";
-
-        if(sort.equals("year")) {
-            return jdbcTemplate.query(sqlQuerySortByYear, this:: mapFilm, directorId); //
-        } else {
-            return jdbcTemplate.query(sqlQuerySortByLikes, this:: mapFilm, directorId);
+                "WHERE fd.director_id = ?";
+        try {
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-    }
-
-    private Film mapFilm(ResultSet row, int rowNum) throws SQLException {
-
     }
 
     private Film getFilmFromDB(long filmId) {
