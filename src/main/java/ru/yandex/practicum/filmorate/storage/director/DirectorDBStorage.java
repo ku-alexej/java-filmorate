@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.storage.director;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 
@@ -41,10 +43,14 @@ public class DirectorDBStorage implements DirectorStorage {
                 "d.name " +
                 "FROM directors AS d " +
                 "WHERE d.id = ?;";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), id)
-                .stream()
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Режиссёра с id :" + id + " нет в базе."));
+        try {
+            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), id)
+                    .stream()
+                    .findAny()
+                    .orElseThrow(() -> new EntityNotFoundException("Режиссёра с id :" + id + " нет в базе."));
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
@@ -54,7 +60,11 @@ public class DirectorDBStorage implements DirectorStorage {
                 "FROM films_directors AS fd " +
                 "JOIN directors AS d ON fd.director_id = d.id " +
                 "WHERE fd.film_id = ?;";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), filmId);
+        try {
+            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
