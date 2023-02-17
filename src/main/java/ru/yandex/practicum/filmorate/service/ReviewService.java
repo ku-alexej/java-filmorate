@@ -51,19 +51,9 @@ public class ReviewService {
         if (count < 0)
             throw new ValidationException("Отрицательный размер списка.");
 
-        if (filmId == null) {
-            return reviewStorage.getAll().stream()
-                    .sorted(marksComparator.reversed())
-                    .limit(count)
-                    .collect(Collectors.toList());
-        } else {
-            filmService.filmIdValidation(filmId);
-            return reviewStorage.getAll().stream()
-                    .filter(review -> review.getFilmId().equals(filmId))
-                    .sorted(marksComparator.reversed())
-                    .limit(count)
-                    .collect(Collectors.toList());
-        }
+        return reviewStorage.getAll(filmId, count).stream()
+                .sorted(marksComparator.reversed())
+                .collect(Collectors.toList());
     }
 
     public void changeMark(long reviewId, long userId, boolean isAdd, boolean isLike) {
@@ -94,7 +84,7 @@ public class ReviewService {
         log.info("Валидация пройдена");
     }
 
-    public void reviewIdValidation(long reviewId) {
+    private void reviewIdValidation(long reviewId) {
         log.info("Валидация данных ID отзыва");
         if (reviewId <= 0 || reviewStorage.getReview(reviewId) == null) {
             throw new EntityNotFoundException("Отзыв с ID " + reviewId + " не существует.");

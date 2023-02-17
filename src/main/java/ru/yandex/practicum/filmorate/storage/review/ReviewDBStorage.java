@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,18 +16,26 @@ import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ReviewDBStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public ReviewDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public List<Review> getAll() {
-        final String sqlQuery = "select REVIEW_ID, CONTENT, IS_POSITIVE, USER_ID, FILM_ID " +
-                "from REVIEWS";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToReview);
+    @Override
+    public List<Review> getAll(Long filmId, int count) {
+        final String sqlQuery;
+        if (filmId == null) {
+            sqlQuery = "select REVIEW_ID, CONTENT, IS_POSITIVE, USER_ID, FILM_ID " +
+                    "from REVIEWS " +
+                    "limit ?";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count);
+        } else {
+            sqlQuery = "select REVIEW_ID, CONTENT, IS_POSITIVE, USER_ID, FILM_ID " +
+                    "from REVIEWS " +
+                    "where FILM_ID = ? " +
+                    "limit ?";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToReview, filmId, count);
+        }
     }
 
     @Override
