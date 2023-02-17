@@ -10,9 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -20,7 +19,6 @@ public class FilmService {
 
     private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private static final int MAX_FILM_DESCRIPTION = 200;
-    private static Comparator<Film> likesComparator = Comparator.comparing(obj -> obj.getUsersId().size());
 
     @Autowired
     @Qualifier("FilmDBStorage")
@@ -66,16 +64,16 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getPopular(long count) {
-
-        if (filmStorage.allFilms().size() < count) {
-            count = filmStorage.allFilms().size();
+    public List<Film> getPopular(int count, int genreId, int year) {
+        if (genreId == 0 && year == 0) {
+            return filmStorage.getPopular(count);
+        } else if (genreId != 0 && year != 0) {
+           return filmStorage.getPopularByGenreAndYear(genreId, year, count);
+        } else if (genreId != 0) {
+            return filmStorage.getPopularByGenre(genreId, count);
+        } else {
+            return filmStorage.getPopularByYear(year, count);
         }
-
-        return filmStorage.allFilms().stream()
-                .sorted(likesComparator.reversed())
-                .limit(count)
-                .collect(Collectors.toList());
     }
 
     public void filmValidation(Film film) {

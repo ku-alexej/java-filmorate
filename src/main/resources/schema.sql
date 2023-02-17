@@ -13,6 +13,7 @@ create table if not exists FILMS (
     DESCRIPTION  CHARACTER VARYING(200),
     RELEASE_DATE DATE,
     DURATION     INTEGER,
+    RATE         INTEGER,
     MPA_ID       INTEGER,
     constraint FILMS_PK
         primary key (FILM_ID),
