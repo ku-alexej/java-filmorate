@@ -65,7 +65,7 @@ public class ReviewService {
             reviewStorage.deleteMark(reviewId, userId);
     }
 
-    public void reviewValidation(Review review) {
+    private void reviewValidation(Review review) {
         log.info("Валидация данных");
         if (review.getContent() == null || review.getContent().isBlank()) {
             throw new ValidationException("В отзыве нет контента");
