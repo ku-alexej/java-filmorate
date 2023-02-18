@@ -26,6 +26,7 @@ public class Film {
     private Integer rate;
     private Mpa mpa;
     private Set<Genre> genres;
+    private Set<Director> directors;
     @JsonIgnore
     private Set<Long> usersId;
 }

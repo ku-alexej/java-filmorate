@@ -33,4 +33,6 @@ public interface FilmStorage {
     List<Film> getPopularByYear(int year, int count);
 
     List<Film> getPopularByGenreAndYear(int genreId, int year, int count);
+
+    List<Film> allDirectorsFilms(long directorId);
 }
