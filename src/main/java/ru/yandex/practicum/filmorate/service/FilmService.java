@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FeedOperation;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
@@ -33,6 +36,10 @@ public class FilmService {
 
     @Autowired
     private DirectorService directorService;
+
+    @Autowired
+    private FeedStorage feedDBStorage;
+
 
     public List<Film> allFilms() {
         return filmStorage.allFilms();
@@ -63,12 +70,14 @@ public class FilmService {
         filmIdValidation(filmId);
         userService.userIdValidation(userId);
         filmStorage.addLike(filmId, userId);
+        feedDBStorage.addToFeed(userId, EventType.LIKE, FeedOperation.ADD, filmId);
     }
 
     public void removeLike(long filmId, long userId) {
         filmIdValidation(filmId);
         userService.userIdValidation(userId);
         filmStorage.removeLike(filmId, userId);
+        feedDBStorage.addToFeed(userId, EventType.LIKE, FeedOperation.REMOVE, filmId);
     }
 
     public List<Film> getPopular(long count) {
