@@ -16,7 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DirectorService {
 
-    @Autowired
     private FilmService filmService;
     private final DirectorStorage directorStorage;
 
