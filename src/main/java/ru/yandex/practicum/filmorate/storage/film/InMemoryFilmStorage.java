@@ -1,4 +1,3 @@
-/*
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
@@ -80,13 +79,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public  List<Film> getCommonFilms(long userId, long friendId) {
+    public List<Film> getCommonFilms(long userId, long friendId) {
         return null;
     }
+
     @Override
     public List<Film> getLikedFilm(long userId) {
         return null;
     }
 
+    @Override
+    public List<Film> allDirectorsFilms(long directorId) {
+        return null;
+    }
+
 }
-*/
