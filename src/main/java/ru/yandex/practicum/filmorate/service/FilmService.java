@@ -83,6 +83,13 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public List<Film> searchFilm(String query, String searchBy) {
+        boolean searchByName, searchByDirector;
+        searchByName = searchBy.toLowerCase().contains("title");
+        searchByDirector = searchBy.toLowerCase().contains("director");
+        return filmStorage.searchFilm(query, searchByName, searchByDirector);
+    }
+
     public void filmValidation(Film film) {
         log.info("Валидация данных");
         if (film.getName().isBlank()) {
