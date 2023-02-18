@@ -7,9 +7,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.sql.Date;
@@ -58,7 +62,10 @@ public class FilmDBStorage implements FilmStorage {
         }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         if (film.getGenres() != null) {
-            updateFilmGenres(film);
+            addFilmGenres(film);
+        }
+        if (film.getDirectors() != null) {
+            addFilmDirectors(film);
         }
         log.debug("Новому фильму присвоен ID: {}", film.getId());
         return film;
@@ -71,6 +78,11 @@ public class FilmDBStorage implements FilmStorage {
             deleteFilmGenres(film);
         } else {
             updateFilmGenres(film);
+        }
+        if (film.getDirectors() == null) {
+            deleteFilmDirectors(film);
+        } else {
+            updateFilmDirectors(film);
         }
         log.debug("Обновлен фильм с ID: {}", film.getId());
         return getFilm(film.getId());
@@ -102,6 +114,34 @@ public class FilmDBStorage implements FilmStorage {
                 "where FILM_ID = ?";
         int i = jdbcTemplate.update(sqlQuery, film.getId());
         log.debug("Для фильма с ID {} удалено {} жанров", film.getId(), i);
+    }
+
+    private void updateFilmDirectors(Film film) {
+        deleteFilmDirectors(film);
+        addFilmDirectors(film);
+    }
+
+    private void addFilmDirectors(Film f) {
+        final String sqlQuery = "insert into FILMS_DIRECTORS (DIRECTOR_ID, FILM_ID) " +
+                "values (?, ?) ";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        Set<Director> directors = f.getDirectors();
+
+        for (Director d : directors) {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"ID"});
+                stmt.setLong(1, d.getId());
+                stmt.setLong(2, f.getId());
+                return stmt;
+            }, keyHolder);
+        }
+    }
+
+    private void deleteFilmDirectors(Film film) {
+        String sqlQuery = "delete from FILMS_DIRECTORS " +
+                "where film_id = ?";
+        int i = jdbcTemplate.update(sqlQuery, film.getId());
+        log.debug("Для фильма с ID {} удалено {} режиссеров", film.getId(), i);
     }
 
     @Override
@@ -168,10 +208,25 @@ public class FilmDBStorage implements FilmStorage {
 
         Collection<Long> filmList = jdbcTemplate.queryForList(sqlQuery, Long.class, userId);
 
-        if(!filmList.isEmpty()) {
+        if (!filmList.isEmpty()) {
             return filmList.stream().map(this::getFilm).collect(Collectors.toList());
         } else {
             return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<Film> allDirectorsFilms(long directorId) {
+        String sqlQuery = "SELECT f.FILM_ID as FILM_ID, f.FILM_NAME as FILM_NAME, " +
+                "f.DESCRIPTION as DESCRIPTION, f.RELEASE_DATE as RELEASE_DATE, " +
+                "f.DURATION as DURATION, f.MPA_ID as MPA_ID " +
+                "FROM FILMS_DIRECTORS fd " +
+                "JOIN FILMS f on fd.film_id = f.FILM_ID " +
+                "WHERE fd.director_id = ?";
+        try {
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
     }
 
@@ -195,8 +250,18 @@ public class FilmDBStorage implements FilmStorage {
                 .duration(resultSet.getInt("DURATION"))
                 .mpa(mpaStorage.getMpa(resultSet.getInt("MPA_ID")))
                 .genres(getFilmGenresFromDB(resultSet.getLong("FILM_ID")))
+                .directors(getFilmDirectorsFromDB(resultSet.getLong("film_id")))
                 .usersId(getUsersLikesFromDB(resultSet.getLong("FILM_ID")))
                 .build();
+    }
+
+    private Set<Director> getFilmDirectorsFromDB(long filmid) {
+        String sqlQuery = "SELECT d.id, d.name " +
+                "FROM FILMS_DIRECTORS AS fd " +
+                "JOIN DIRECTORS AS d on fd.director_id = d.id " +
+                "WHERE fd.film_id = ? " +
+                "GROUP BY d.id";
+        return new HashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToDirector, filmid));
     }
 
     private Set<Genre> getFilmGenresFromDB(long filmId) {
@@ -211,6 +276,13 @@ public class FilmDBStorage implements FilmStorage {
         return Genre.builder()
                 .id(resultSet.getInt("GENRE_ID"))
                 .name(resultSet.getString("GENRE_NAME"))
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(rs.getLong("id"))
+                .name(rs.getString("name"))
                 .build();
     }
 

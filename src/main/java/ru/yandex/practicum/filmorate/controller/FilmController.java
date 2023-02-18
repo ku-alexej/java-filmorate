@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -81,5 +82,11 @@ public class FilmController {
                 ": запрос общих фильмов у пользователей с id " +
                 userId + " и " + friendId);
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getDirectorsFilmSorted(@PathVariable long directorId, @RequestParam String sortBy) {
+        log.debug("GET /films/director/{directorId}?sortBy=[year,likes]");
+        return filmService.getDirectorsFilmSorted(directorId, sortBy);
     }
 }
