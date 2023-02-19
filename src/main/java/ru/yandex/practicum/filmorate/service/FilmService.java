@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Slf4j
 @Service
 public class FilmService {
@@ -80,16 +81,16 @@ public class FilmService {
         feedDBStorage.addToFeed(userId, EventType.LIKE, FeedOperation.REMOVE, filmId);
     }
 
-    public List<Film> getPopular(long count) {
-
-        if (filmStorage.allFilms().size() < count) {
-            count = filmStorage.allFilms().size();
+    public List<Film> getPopular(int count, int genreId, int year) {
+        if (genreId == 0 && year == 0) {
+            return filmStorage.getPopular(count);
+        } else if (genreId != 0 && year != 0) {
+           return filmStorage.getPopularByGenreAndYear(genreId, year, count);
+        } else if (genreId != 0) {
+            return filmStorage.getPopularByGenre(genreId, count);
+        } else {
+            return filmStorage.getPopularByYear(year, count);
         }
-
-        return filmStorage.allFilms().stream()
-                .sorted(likesComparator.reversed())
-                .limit(count)
-                .collect(Collectors.toList());
     }
 
     public List<Film> searchFilm(String query, String searchBy) {

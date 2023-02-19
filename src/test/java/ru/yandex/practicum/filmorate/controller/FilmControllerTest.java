@@ -46,7 +46,7 @@ class FilmControllerTest {
     void beforeEach() {
         mpa = new Mpa(1, null);
         film = new Film(0, "name", "description",
-                LocalDate.of(1895, 12, 28), 10, mpa, null, null, null);
+                LocalDate.of(1895, 12, 28), 10, 0, mpa, null, null, null);
     }
 
     @Test
