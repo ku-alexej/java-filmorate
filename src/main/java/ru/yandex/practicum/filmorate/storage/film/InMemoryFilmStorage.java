@@ -16,7 +16,7 @@ import java.util.Map;
 @Qualifier("InMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
     private long filmId = 1;
 
     @Override
@@ -89,8 +89,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> allDirectorsFilms(long directorId) {
+    public List<Film> getPopularByGenre(int genreId, int count) {
         return null;
     }
 
+    @Override
+    public List<Film> getPopularByYear(int year, int count) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getPopularByGenreAndYear(int genreId, int year, int count) {
+        return null;
+    }
+
+    @Override
+    public List<Film> allDirectorsFilms(long directorId) {
+        return null;
+    }
 }
