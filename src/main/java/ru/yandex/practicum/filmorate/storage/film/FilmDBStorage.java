@@ -172,7 +172,6 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public void addLike(long filmId, long userId) {
-        Film film = getFilmFromDB(filmId);
         final String sqlQuery = "insert into LIKES (FILM_ID, USER_ID) " +
                 "values (?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -184,35 +183,23 @@ public class FilmDBStorage implements FilmStorage {
             return stmt;
         }, keyHolder);
         log.debug("Лайк поставлен");
-
-        if (film != null) {
-            int rate = film.getRate() + 1;
-            film.setRate(rate);
-            updateRate(film);
-        }
     }
 
     @Override
     public void removeLike(long filmId, long userId) {
-        Film film = getFilmFromDB(filmId);
         String sqlQuery = "delete from LIKES " +
                 "where FILM_ID = ? and USER_ID = ?";
         jdbcTemplate.update(sqlQuery, filmId, userId);
         log.debug("Лайк удален");
-
-        if (film != null && film.getRate() != 0) {
-            int rate = film.getRate() - 1;
-            film.setRate(rate);
-            updateRate(film);
-        }
     }
 
     @Override
     public List<Film> getPopular(long count) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
-                "group by f.film_id " +
-                "order by f.rate desc " +
+                "left join LIKES l on f.FILM_ID = l.FILM_ID " +
+                "group by f.FILM_ID " +
+                "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
@@ -242,11 +229,12 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> getPopularByGenre(int genreId, int count) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
+                "left join LIKES l on f.FILM_ID = l.FILM_ID " +
                 "where f.FILM_ID in (select FILM_ID " +
                 "from FILMS_GENRES " +
                 "where GENRE_ID = ?) " +
                 "group by f.FILM_ID " +
-                "order by f.RATE desc " +
+                "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
@@ -256,9 +244,10 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> getPopularByYear(int year, int count) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
-                "WHERE EXTRACT(YEAR from release_date) = ? " +
+                "left join LIKES l on f.FILM_ID = l.FILM_ID " +
+                "where EXTRACT(YEAR from release_date) = ? " +
                 "group by f.FILM_ID " +
-                "order by f.RATE desc " +
+                "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
@@ -268,23 +257,16 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> getPopularByGenreAndYear(int genreId, int year, int count) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
+                "left join LIKES l on f.FILM_ID = l.FILM_ID " +
                 "WHERE EXTRACT(YEAR from release_date) = ? " +
                 "AND f.FILM_ID in (select fg.FILM_ID " +
                 "from FILMS_GENRES fg " +
                 "where fg.GENRE_ID = ?) " +
                 "group by f.FILM_ID " +
-                "order by f.RATE desc " +
+                "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, genreId, count);
-    }
-
-    private void updateRate(Film film) {
-        String sqlQuery = "update FILMS " +
-                "set RATE = ? " +
-                "where FILM_ID = ?";
-
-        jdbcTemplate.update(sqlQuery, film.getRate(), film.getId());
     }
 
     @Override
