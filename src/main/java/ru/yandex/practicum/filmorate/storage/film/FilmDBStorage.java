@@ -289,11 +289,11 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> allDirectorsFilms(long directorId) {
-        String sqlQuery = "SELECT f.FILM_ID as FILM_ID, f.FILM_NAME as FILM_NAME, " +
-                "f.DESCRIPTION as DESCRIPTION, f.RELEASE_DATE as RELEASE_DATE, " +
-                "f.DURATION as DURATION, f.MPA_ID as MPA_ID " +
+        String sqlQuery = "SELECT f.FILM_ID, f.FILM_NAME, " +
+                "f.DESCRIPTION, f.RELEASE_DATE, " +
+                "f.DURATION, f.RATE, f.MPA_ID " +
                 "FROM FILMS_DIRECTORS fd " +
-                "JOIN FILMS f on fd.film_id = f.FILM_ID " +
+                "JOIN FILMS f on f.film_id = fd.FILM_ID " +
                 "WHERE fd.director_id = ?";
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
@@ -371,7 +371,7 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        String sqlQuery = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE , f.DURATION, f.MPA_ID, " +
+        String sqlQuery = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE , f.DURATION, f.RATE, f.MPA_ID, " +
                 "r.MPA_NAME, p.popularity FROM Films AS f " +
                 "JOIN LIKES l ON f.FILM_ID  = l.FILM_ID " +
                 "JOIN LIKES ls ON f.FILM_ID = ls.FILM_ID " +
