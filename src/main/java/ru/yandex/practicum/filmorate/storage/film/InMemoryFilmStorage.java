@@ -93,4 +93,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return null;
     }
 
+    @Override
+    public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector){
+        return null;
+    }
+
 }
