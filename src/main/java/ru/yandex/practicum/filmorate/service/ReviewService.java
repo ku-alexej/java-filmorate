@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FeedOperation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.Comparator;
@@ -27,19 +30,28 @@ public class ReviewService {
     @Autowired
     private FilmService filmService;
 
+    @Autowired
+    private FeedStorage feedDBStorage;
+
     public Review addReview(Review review) {
         reviewValidation(review);
-        return reviewStorage.addReview(review);
+        Review newReview = reviewStorage.addReview(review);
+        feedDBStorage.addToFeed(newReview.getUserId(), EventType.REVIEW, FeedOperation.ADD, newReview.getReviewId());
+        return newReview;
     }
 
     public Review updateReview(Review review) {
         reviewValidation(review);
+        Review reviewFromDB = getReview(review.getReviewId());
+        feedDBStorage.addToFeed(reviewFromDB.getUserId(), EventType.REVIEW, FeedOperation.UPDATE, review.getReviewId());
         return reviewStorage.updateReview(review);
     }
 
     public void deleteReview(long reviewId) {
         reviewIdValidation(reviewId);
+        Review review = getReview(reviewId);
         reviewStorage.deleteReview(reviewId);
+        feedDBStorage.addToFeed(review.getUserId(), EventType.REVIEW, FeedOperation.REMOVE, reviewId);
     }
 
     public Review getReview(long reviewId) {
