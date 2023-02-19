@@ -6,13 +6,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.FeedOperation;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,6 +35,9 @@ public class UserService {
     @Autowired
     @Qualifier("FilmDBStorage")
     private FilmStorage filmStorage;
+
+    @Autowired
+    private FeedStorage feedDBStorage;
 
     public List<User> allUsers() {
         return userStorage.allUsers();
@@ -57,12 +68,14 @@ public class UserService {
         userIdValidation(userId);
         userIdValidation(friendId);
         userStorage.addFriend(getUser(userId), getUser(friendId));
+        feedDBStorage.addToFeed(userId, EventType.FRIEND, FeedOperation.ADD, friendId);
     }
 
     public void removeFriend(long userId, long friendId) {
         userIdValidation(userId);
         userIdValidation(friendId);
         userStorage.removeFriend(userId, friendId);
+        feedDBStorage.addToFeed(userId, EventType.FRIEND, FeedOperation.REMOVE, friendId);
     }
 
     public List<User> getUserFriends(long userId) {
@@ -111,8 +124,8 @@ public class UserService {
         for (Map.Entry<User, List<Film>> entry : getUsersLikedFilms.entrySet()) {
             int freq = 0;
             for (Film film : entry.getValue()) {
-                if(getLikedFilms.contains(film)) {
-                    freq ++;
+                if (getLikedFilms.contains(film)) {
+                    freq++;
                 }
             }
             if (freq > maxFreq) {
@@ -122,7 +135,7 @@ public class UserService {
         }
 
         for (Map.Entry<User, Integer> entry : similarLikeUser.entrySet()) {
-            if(getUsersLikedFilms.get(entry.getKey()).size() > maxFreq) {
+            if (getUsersLikedFilms.get(entry.getKey()).size() > maxFreq) {
                 List<Film> recFilms = getUsersLikedFilms.get(entry.getKey());
                 recFilms.removeAll(getLikedFilms);
                 recommendations.addAll(recFilms);
@@ -130,6 +143,11 @@ public class UserService {
         }
 
         return recommendations;
+    }
+
+    public List<Feed> getFeedByUserId(long userId) {
+        userIdValidation(userId);
+        return feedDBStorage.getFeedByUserId(userId);
     }
 
     public void userValidation(User user) {

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,10 +93,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         return null;
     }
 
-    @Override
-    public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector){
-        return null;
-    }
-
 }
-
