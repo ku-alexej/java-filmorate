@@ -85,7 +85,7 @@ public class FilmService {
         if (genreId == 0 && year == 0) {
             return filmStorage.getPopular(count);
         } else if (genreId != 0 && year != 0) {
-           return filmStorage.getPopularByGenreAndYear(genreId, year, count);
+            return filmStorage.getPopularByGenreAndYear(genreId, year, count);
         } else if (genreId != 0) {
             return filmStorage.getPopularByGenre(genreId, count);
         } else {

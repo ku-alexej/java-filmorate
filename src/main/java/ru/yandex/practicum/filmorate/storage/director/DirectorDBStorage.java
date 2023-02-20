@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.director;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -17,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -54,20 +52,6 @@ public class DirectorDBStorage implements DirectorStorage {
     }
 
     @Override
-    public List<Director> getByFilmId(Long filmId) throws NotFoundException {
-        String sqlQuery = "SELECT d.id, " +
-                "d.name " +
-                "FROM films_directors AS fd " +
-                "JOIN directors AS d ON fd.director_id = d.id " +
-                "WHERE fd.film_id = ?;";
-        try {
-            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), filmId);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    @Override
     public Director add(Director director) {
         String sqlQuery = "INSERT INTO directors (name) VALUES (?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -96,33 +80,6 @@ public class DirectorDBStorage implements DirectorStorage {
     public void delete(Long id) {
         String sqlQuery = "DELETE FROM directors WHERE id = ?;";
         jdbcTemplate.update(sqlQuery, id);
-    }
-
-    @Override
-    public void addAllToFilmId(Long filmId, List<Director> directors) throws NotFoundException {
-        List<Director> directorsDistinct = directors.stream().distinct().collect(Collectors.toList());
-        for (Director director : directorsDistinct) {
-            getById(director.getId());
-        }
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO films_directors (director_id, film_id) VALUES (?, ?);",
-                new BatchPreparedStatementSetter() {
-                    public void setValues(PreparedStatement statement, int i) throws SQLException {
-                        statement.setLong(1, directorsDistinct.get(i).getId());
-                        statement.setLong(2, filmId);
-                    }
-
-                    public int getBatchSize() {
-                        return directorsDistinct.size();
-                    }
-                }
-        );
-    }
-
-    @Override
-    public void deleteAllByFilmId(Long filmId) {
-        String sqlQuery = "DELETE FROM films_directors WHERE film_id = ?;";
-        jdbcTemplate.update(sqlQuery, filmId);
     }
 
     private Director makeDirector(ResultSet rs) throws SQLException {

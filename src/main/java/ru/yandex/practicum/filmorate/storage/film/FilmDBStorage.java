@@ -18,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -297,11 +296,11 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector){
+    public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector) {
         String sqlQuery = "";
         searchQuery = "%" + searchQuery.toLowerCase() + "%";
         if (searchByName == searchByDirector) {
-            sqlQuery = "SELECT * FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
                     "LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "WHERE fd.DIRECTOR_ID IN (" +
                     "SELECT d.ID  FROM DIRECTORS d WHERE LOWER(d.NAME) LIKE ?" +
@@ -309,10 +308,10 @@ public class FilmDBStorage implements FilmStorage {
                     "GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC";
             return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, searchQuery, searchQuery);
         } else if (searchByName)
-            sqlQuery = "SELECT * FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
                     "WHERE LOWER(f.FILM_NAME) LIKE ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC";
         else
-            sqlQuery = "SELECT * FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
                     "INNER JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "WHERE fd.DIRECTOR_ID IN (" +
                     "SELECT d.ID  FROM DIRECTORS d WHERE LOWER(d.NAME) LIKE ?" +

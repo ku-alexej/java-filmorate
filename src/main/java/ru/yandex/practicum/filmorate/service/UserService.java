@@ -103,7 +103,6 @@ public class UserService {
         return mutualFriends;
     }
 
-    //to-do попробовать сделать запрос sql вместо логики java
     public List<Film> getRecommendations(long userId) {
         userIdValidation(userId);
 
