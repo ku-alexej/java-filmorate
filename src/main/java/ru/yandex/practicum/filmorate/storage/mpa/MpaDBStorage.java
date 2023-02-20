@@ -25,7 +25,7 @@ public class MpaDBStorage implements MpaStorage {
     @Override
     public List<Mpa> allMpa() {
         final String sqlQuery = "select MPA_ID, MPA_NAME " +
-                                "from MPAS";
+                "from MPAS";
         return jdbcTemplate.query(sqlQuery, this::mapRowToMpa);
     }
 
@@ -36,8 +36,8 @@ public class MpaDBStorage implements MpaStorage {
 
     private Mpa getMpaFromDB(int mpaId) {
         String sqlQuery = "select MPA_ID, MPA_NAME " +
-                          "from MPAS " +
-                          "where MPA_ID = ?";
+                "from MPAS " +
+                "where MPA_ID = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, mpaId);
         } catch (EmptyResultDataAccessException e) {

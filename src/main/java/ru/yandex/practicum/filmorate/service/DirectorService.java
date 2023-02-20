@@ -15,7 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DirectorService {
 
-    private FilmService filmService;
     private final DirectorStorage directorStorage;
 
     public List<Director> getAll() {
@@ -25,11 +24,6 @@ public class DirectorService {
     public Director getById(Long id) {
         validateDirectorId(id);
         return directorStorage.getById(id);
-    }
-
-    public List<Director> getByFilmId(Long filmId) {
-        filmService.filmIdValidation(filmId);
-        return directorStorage.getByFilmId(filmId);
     }
 
     public Director add(Director director) {
@@ -44,13 +38,6 @@ public class DirectorService {
 
     public void delete(Long id) {
         directorStorage.delete(id);
-    }
-
-    public void updateForFilm(Long filmId, List<Director> directors) {
-        directorStorage.deleteAllByFilmId(filmId);
-        if (directors != null) {
-            directorStorage.addAllToFilmId(filmId, directors);
-        }
     }
 
     public static void validate(Director director) {

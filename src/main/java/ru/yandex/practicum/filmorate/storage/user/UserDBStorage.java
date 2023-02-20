@@ -106,8 +106,8 @@ public class UserDBStorage implements UserStorage {
     @Override
     public List<User> getFriends(long userId) {
         String sqlQuery = "select FRIEND_ID as USER_ID, EMAIL, LOGIN, USER_NAME, BIRTHDAY " +
-                        "from USERS as U join FRIENDS F on U.USER_ID = F.FRIEND_ID " +
-                        "where F.USER_ID = ?";
+                "from USERS as U join FRIENDS F on U.USER_ID = F.FRIEND_ID " +
+                "where F.USER_ID = ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, userId);
     }
 

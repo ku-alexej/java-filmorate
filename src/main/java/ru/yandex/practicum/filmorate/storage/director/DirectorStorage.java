@@ -10,16 +10,11 @@ public interface DirectorStorage {
 
     Director getById(Long id);
 
-    List<Director> getByFilmId(Long filmId) throws NotFoundException;
-
     Director add(Director director);
 
     Director update(Director director);
 
     void delete(Long id);
 
-    void addAllToFilmId(Long filmId, List<Director> directors);
-
-    void deleteAllByFilmId(Long filmId);
 }
 

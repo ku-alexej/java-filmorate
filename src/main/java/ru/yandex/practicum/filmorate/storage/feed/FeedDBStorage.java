@@ -54,7 +54,7 @@ public class FeedDBStorage implements FeedStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("FEED")
                 .usingGeneratedKeyColumns("EVENT_ID");
-        Long idFilm = simpleJdbcInsert.executeAndReturnKey(feedToMap(feed)).longValue();
+        simpleJdbcInsert.executeAndReturnKey(feedToMap(feed)).longValue();
     }
 
     private Map<String, Object> feedToMap(Feed feed) {
