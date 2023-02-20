@@ -2,19 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -75,6 +69,17 @@ public class FilmController {
         return filmService.getPopular(count, genreId, year);
     }
 
+    @GetMapping("/search")
+    public List<Film> searchFilm(@RequestParam("query") Optional<String> query, @RequestParam("by") Optional<String> searchBy){
+        if(!query.isEmpty()){
+            log.info("поиск по запросу: {}", query);
+            if(searchBy.isPresent())
+                return filmService.searchFilm(query.get(), searchBy.get());
+            else
+                return filmService.searchFilm(query.get(), "title,director");
+        } else
+            throw new EntityNotFoundException("отсутствует строка поиска");
+    }
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
         log.debug("Get /films/common?userId={userId}&friendId={friendId} " +
