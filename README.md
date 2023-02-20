@@ -1,35 +1,17 @@
-# Что в этом файле
+# 12 спринт 6 группа
 
 
-### Логика популярных фильмов и общих друзей
+### Распределение задач
 
-По ТЗ добавляем ```FilmDBStorage``` и ```UserDBStorage```, в ```FilmService``` и ```UserService``` ничего менять не просят. 
-Обработка популярных фильмов и общих друзей осталась в прежних сервисах, так как живы ```InMemory..Storage```.
-Данные для обработки собираются из таблиц, хотя оттуда можно было бы брать сразу данные, если дропнуть ```InMemory..Storage```.
-
-Пример топ 10 фильмов:
-```
-SELECT film_name.films
-FROM films
-WHERE film_id IN (SELECT film_id.likes
-                  FROM likes
-                  GROUP BY film_id
-                  ORDER BY SUM(user_id) DESC
-                  LIMIT 10);
-```
-
-### О дружбе пользователей в ТЗ и проекте
-
-В промежуточном ТЗ и ТЗ 11 очень неоднозначно написано как теперь работает дружба.
-По тестам Postman oна осталась односторонней.
-
-В целом из таблицы ```FRIENDS``` в этом проекте можно вывести список общих подтвержденных друзей используя несколько джойнов. 
-Но тогда тесты Postman не пройдут.
-
-Реализовал под тесты Postman.
+- Удаление фильмов и пользователей (`add-remove-endpoint`)  - [Алексей Курочкин](https://github.com/ku-alexej).
+- Функциональность «Общие фильмы» (`add-common-films`) - [Кирилл Бабиченко](https://github.com/KirillBabichenko).
+- Функциональность «Рекомендации» (`add-recommendations`) - [Энтони-Эльвек Босхаев](https://github.com/Anthony-Elvek).
+- Функциональность  «Отзывы» (`add-reviews`) - [Алексей Курочкин](https://github.com/ku-alexej).
+- Добавление режиссёров в фильмы (`add-director`) - [Илья Другов](https://github.com/BegemotKotei).
+- Функциональность «Лента событий» (`add-feed`) - - [Кирилл Бабиченко](https://github.com/KirillBabichenko).
+- Вывод самых популярных фильмов по жанру и годам (`add-most-populars`) - [Энтони-Эльвек Босхаев](https://github.com/Anthony-Elvek).
+- Функциональность «Поиск» (`add-search`) - [Алексей Бердин](https://github.com/JustAlexB).
 
 ### ER_model
 
-Для самопроверки схема выложена тут: [ER-model](https://github.com/ku-alexej/er_model)
-
-Обратная связь и измененная схема выложены в конце файла ```README.md``` в репозитории схемы.
+![Диаграмма БД](diagram/erDiagram.png)
