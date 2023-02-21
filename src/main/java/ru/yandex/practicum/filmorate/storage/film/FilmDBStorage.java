@@ -218,11 +218,7 @@ public class FilmDBStorage implements FilmStorage {
 
         Collection<Long> filmList = jdbcTemplate.queryForList(sqlQuery, Long.class, userId);
 
-        if (!filmList.isEmpty()) {
-            return filmList.stream().map(this::getFilm).collect(Collectors.toList());
-        } else {
-            return new ArrayList<>();
-        }
+        return filmList.stream().map(this::getFilm).collect(Collectors.toList());
     }
 
     @Override
@@ -245,7 +241,8 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
                 "left join LIKES l on f.FILM_ID = l.FILM_ID " +
-                "where EXTRACT(YEAR from release_date) = ? " +
+                "join FILM_GENRES fg on f.FILM_ID = fg.FILM_ID " +
+                "where fg.GENRE_ID = ? " +
                 "group by f.FILM_ID " +
                 "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
@@ -258,10 +255,9 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
                 "left join LIKES l on f.FILM_ID = l.FILM_ID " +
-                "WHERE EXTRACT(YEAR from release_date) = ? " +
-                "AND f.FILM_ID in (select fg.FILM_ID " +
-                "from FILMS_GENRES fg " +
-                "where fg.GENRE_ID = ?) " +
+                "join FILM_GENRES fg on f.FILM_ID = fg.FILM_ID " +
+                "where fg.GENRE_ID = ? and " +
+                "EXTRACT(YEAR from release_date) = ? " +
                 "group by f.FILM_ID " +
                 "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
