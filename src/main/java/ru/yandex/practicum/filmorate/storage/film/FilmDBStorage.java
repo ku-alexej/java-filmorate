@@ -293,27 +293,20 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector) {
-        String sqlQuery = "";
-        searchQuery = "%" + searchQuery.toLowerCase() + "%";
+        searchQuery = "%" + searchQuery + "%";
+        String sqlQuery = "SELECT f.* FROM FILMS f " +
+                "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                "LEFT JOIN FILMS_DIRECTORS fd  ON f.FILM_ID = fd.FILM_ID " +
+                "LEFT JOIN DIRECTORS d2 ON fd.DIRECTOR_ID = d2.ID " +
+                "WHERE LOWER(d2.NAME) LIKE LOWER(?) OR LOWER(f.FILM_NAME) LIKE LOWER(?) " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY COUNT(l.USER_ID) DESC";
         if (searchByName == searchByDirector) {
-            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
-                    "WHERE fd.DIRECTOR_ID IN (" +
-                    "SELECT d.ID  FROM DIRECTORS d WHERE LOWER(d.NAME) LIKE ?" +
-                    ") OR LOWER(f.FILM_NAME) LIKE ?" +
-                    "GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC";
             return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, searchQuery, searchQuery);
-        } else if (searchByName)
-            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
-                    "WHERE LOWER(f.FILM_NAME) LIKE ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC";
-        else
-            sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
-                    "INNER JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
-                    "WHERE fd.DIRECTOR_ID IN (" +
-                    "SELECT d.ID  FROM DIRECTORS d WHERE LOWER(d.NAME) LIKE ?" +
-                    ") GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, searchQuery);
+        } else if (searchByName) {
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, "", searchQuery);
+        }
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, searchQuery, "");
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {

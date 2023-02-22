@@ -27,19 +27,19 @@ public class FilmController {
     @Autowired
     private FilmService filmService;
 
-    @GetMapping()
+    @GetMapping
     public List<Film> allFilms() {
         log.info("Get /films : запрос списка фильмов");
         return filmService.allFilms();
     }
 
-    @PostMapping()
+    @PostMapping
     public Film addFilm(@RequestBody Film film) {
         log.debug("Post /films : добавление фильма {}", film);
         return filmService.addFilm(film);
     }
 
-    @PutMapping()
+    @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         log.debug("Put /films : обновление данных фильма {}", film);
         return filmService.updateFilm(film);
@@ -79,15 +79,12 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> searchFilm(@RequestParam("query") Optional<String> query, @RequestParam("by") Optional<String> searchBy) {
-        if (!query.isEmpty()) {
-            log.info("поиск по запросу: {}", query);
-            if (searchBy.isPresent())
-                return filmService.searchFilm(query.get(), searchBy.get());
-            else
-                return filmService.searchFilm(query.get(), "title,director");
-        } else
+    public List<Film> searchFilm(@RequestParam(name = "query", required = false) String query, @RequestParam(name = "by", defaultValue = "title,director", required = false) String searchBy) {
+        if (query == null) {
             throw new EntityNotFoundException("отсутствует строка поиска");
+        }
+        log.info("Поиск по запросу: {}", query);
+        return filmService.searchFilm(query, searchBy);
     }
 
     @GetMapping("/common")
