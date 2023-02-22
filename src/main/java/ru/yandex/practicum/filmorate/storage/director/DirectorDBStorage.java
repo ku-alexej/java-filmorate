@@ -22,6 +22,7 @@ import java.util.Objects;
 @Qualifier("DirectorDBStorage")
 public class DirectorDBStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
+    DirectorStorage directorStorage;
 
     public DirectorDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -36,18 +37,15 @@ public class DirectorDBStorage implements DirectorStorage {
     }
 
     @Override
-    public Director getById(Long id) throws NotFoundException {
+    public Director getById(Long id) throws EntityNotFoundException {
         String sqlQuery = "SELECT d.id, " +
                 "d.name " +
                 "FROM directors AS d " +
                 "WHERE d.id = ?;";
         try {
-            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), id)
-                    .stream()
-                    .findAny()
-                    .orElseThrow(() -> new EntityNotFoundException("Режиссёра с id :" + id + " нет в базе."));
+            return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeDirector(rs), id);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("Режиссёр с {} " + id + " не существует.");
         }
     }
 
@@ -87,5 +85,4 @@ public class DirectorDBStorage implements DirectorStorage {
         String name = rs.getString("name");
         return new Director(id, name);
     }
-
 }

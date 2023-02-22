@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.FeedOperation;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortTypes;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -134,14 +135,14 @@ public class FilmService {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
-    public List<Film> getDirectorsFilmSorted(long directorId, String sortBy) {
+    public List<Film> getDirectorsFilmSorted(long directorId, SortTypes sortBy) {
         directorService.validateDirectorId(directorId);
         switch (sortBy) {
-            case "likes":
+            case LIKES:
                 return filmStorage.allDirectorsFilms(directorId).stream()
                         .sorted(likesComparator.reversed())
                         .collect(Collectors.toList());
-            case "year":
+            case YEAR:
                 return filmStorage.allDirectorsFilms(directorId).stream()
                         .sorted(releaseDateComparator)
                         .collect(Collectors.toList());
