@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -18,7 +19,7 @@ public class DirectorService {
     private final DirectorStorage directorStorage;
 
     public List<Director> getAll() {
-        return directorStorage.getAll();
+        return new ArrayList<>(directorStorage.getAll());
     }
 
     public Director getById(Long id) {

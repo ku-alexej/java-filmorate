@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortTypes;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -98,8 +99,8 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getDirectorsFilmSorted(@PathVariable long directorId, @RequestParam String sortBy) {
+    public List<Film> getDirectorsFilmSorted(@PathVariable long directorId, @RequestParam String sortBy) { //Второе изм.
         log.debug("GET /films/director/{directorId}?sortBy=[year,likes]");
-        return filmService.getDirectorsFilmSorted(directorId, sortBy);
+        return filmService.getDirectorsFilmSorted(directorId, Enum.valueOf(SortTypes.class, sortBy.toUpperCase()));
     }
 }
