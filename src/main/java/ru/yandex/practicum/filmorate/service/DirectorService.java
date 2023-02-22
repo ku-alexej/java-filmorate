@@ -42,20 +42,22 @@ public class DirectorService {
     }
 
     public static void validate(Director director) {
+        log.info("Validation of director");
         if (director.getName() == null || director.getName().isBlank()) {
-            throw new ValidationException("Имя не может быть пустым.");
+            throw new ValidationException("Director's name missing");
         }
+        log.info("Validation of director passed");
     }
 
     public void validateDirectorId(long id) {
-        log.info("Валидация данных ID режиссёра.");
+        log.info("Validation of director's ID");
         if (id <= 0) {
-            throw new EntityNotFoundException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("Director's ID must be greater than zero");
         }
         if (directorStorage.getById(id) == null) {
-            throw new EntityNotFoundException("Режиссёр с {} " + id + " не существует.");
+            throw new EntityNotFoundException("Director with ID " + id + " does not exist");
         }
-        log.info("Валидация ID режиссёра пройдена");
+        log.info("Director's ID validation passed");
     }
 
 }

@@ -17,12 +17,16 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@Qualifier("FilmDBStorage")
+@Qualifier("filmDBStorage")
 public class FilmDBStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -32,7 +36,7 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     @Autowired
-    @Qualifier("MpaDBStorage")
+    @Qualifier("mpaDBStorage")
     private MpaStorage mpaStorage;
 
     @Override
@@ -69,7 +73,7 @@ public class FilmDBStorage implements FilmStorage {
         if (film.getDirectors() != null) {
             addFilmDirectors(film);
         }
-        log.debug("Новому фильму присвоен ID: {}", film.getId());
+        log.debug("New film got ID: {}", film.getId());
         return film;
     }
 
@@ -86,7 +90,7 @@ public class FilmDBStorage implements FilmStorage {
         } else {
             updateFilmDirectors(film);
         }
-        log.debug("Обновлен фильм с ID: {}", film.getId());
+        log.debug("Film ID {} was updated", film.getId());
         return getFilm(film.getId());
     }
 
@@ -115,7 +119,7 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "delete from FILMS_GENRES " +
                 "where FILM_ID = ?";
         int i = jdbcTemplate.update(sqlQuery, film.getId());
-        log.debug("Для фильма с ID {} удалено {} жанров", film.getId(), i);
+        log.debug("Removed {} genre(s) for film ID {}", i, film.getId());
     }
 
     private void updateFilmDirectors(Film film) {
@@ -143,7 +147,7 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "delete from FILMS_DIRECTORS " +
                 "where film_id = ?";
         int i = jdbcTemplate.update(sqlQuery, film.getId());
-        log.debug("Для фильма с ID {} удалено {} режиссеров", film.getId(), i);
+        log.debug("Removed {} director(s) for film ID {}", i, film.getId());
     }
 
     @Override
@@ -167,7 +171,7 @@ public class FilmDBStorage implements FilmStorage {
     public void deleteFilm(long filmId) {
         String sqlQuery = "delete from FILMS where FILM_ID = ?";
         jdbcTemplate.update(sqlQuery, filmId);
-        log.debug("Удален фильм с ID: {}", filmId);
+        log.debug("Film ID {} was deleted", filmId);
     }
 
     @Override
@@ -182,7 +186,7 @@ public class FilmDBStorage implements FilmStorage {
             stmt.setLong(2, userId);
             return stmt;
         }, keyHolder);
-        log.debug("Лайк поставлен");
+        log.debug("Added like from user ID {} for film ID {}", userId, filmId);
     }
 
     @Override
@@ -190,7 +194,7 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "delete from LIKES " +
                 "where FILM_ID = ? and USER_ID = ?";
         jdbcTemplate.update(sqlQuery, filmId, userId);
-        log.debug("Лайк удален");
+        log.debug("Removed like from user ID {} for film ID {}", userId, filmId);
     }
 
     @Override
@@ -226,9 +230,8 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
                 "left join LIKES l on f.FILM_ID = l.FILM_ID " +
-                "where f.FILM_ID in (select FILM_ID " +
-                "from FILMS_GENRES " +
-                "where GENRE_ID = ?) " +
+                "join FILMS_GENRES fg on f.FILM_ID = fg.FILM_ID " +
+                "where fg.GENRE_ID = ? " +
                 "group by f.FILM_ID " +
                 "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
@@ -241,8 +244,8 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
                 "left join LIKES l on f.FILM_ID = l.FILM_ID " +
-                "join FILM_GENRES fg on f.FILM_ID = fg.FILM_ID " +
-                "where fg.GENRE_ID = ? " +
+                "join FILMS_GENRES fg on f.FILM_ID = fg.FILM_ID " +
+                "where EXTRACT(YEAR from release_date) = ? " +
                 "group by f.FILM_ID " +
                 "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
@@ -255,14 +258,14 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATE, f.MPA_ID " +
                 "from FILMS f " +
                 "left join LIKES l on f.FILM_ID = l.FILM_ID " +
-                "join FILM_GENRES fg on f.FILM_ID = fg.FILM_ID " +
+                "join FILMS_GENRES fg on f.FILM_ID = fg.FILM_ID " +
                 "where fg.GENRE_ID = ? and " +
                 "EXTRACT(YEAR from release_date) = ? " +
                 "group by f.FILM_ID " +
                 "order by COUNT(l.USER_ID) desc " +
                 "limit ?";
 
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, genreId, count);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
     }
 
     @Override

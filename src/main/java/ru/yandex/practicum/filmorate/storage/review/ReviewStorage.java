@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface ReviewStorage {
 
-    List<Review> getAll(Long filmId, int count);
+    List<Review> getReviews(Long filmId, int count);
 
-    Review addReview(Review review);
+    Review createReview(Review review);
 
     Review updateReview(Review review);
 

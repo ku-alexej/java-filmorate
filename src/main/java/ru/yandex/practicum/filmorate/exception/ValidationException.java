@@ -8,6 +8,6 @@ public class ValidationException extends RuntimeException {
     public ValidationException(final String message) {
         super(message);
         log.warn(message);
-        log.warn("Валидация НЕ пройдена");
+        log.warn("Validation NOT passed");
     }
 }

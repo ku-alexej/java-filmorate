@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.PreparedStatement;
@@ -19,10 +18,10 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-@Qualifier("DirectorDBStorage")
+@Qualifier("directorDBStorage")
 public class DirectorDBStorage implements DirectorStorage {
+
     private final JdbcTemplate jdbcTemplate;
-    DirectorStorage directorStorage;
 
     public DirectorDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -45,7 +44,7 @@ public class DirectorDBStorage implements DirectorStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeDirector(rs), id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("Режиссёр с {} " + id + " не существует.");
+            throw new EntityNotFoundException("Director with ID " + id + " does not exist");
         }
     }
 

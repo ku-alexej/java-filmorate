@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.model.SortTypes;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -29,43 +28,43 @@ public class FilmController {
 
     @GetMapping
     public List<Film> allFilms() {
-        log.info("Get /films : запрос списка фильмов");
+        log.info("GET /films : get list of all films");
         return filmService.allFilms();
     }
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) {
-        log.debug("Post /films : добавление фильма {}", film);
+        log.debug("POST /films : create film - {}", film);
         return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        log.debug("Put /films : обновление данных фильма {}", film);
+        log.debug("PUT /films : update film - {}", film);
         return filmService.updateFilm(film);
     }
 
     @GetMapping("/{filmId}")
     public Film getFilm(@PathVariable long filmId) {
-        log.debug("Get /films/" + filmId + " : запрос фильма");
+        log.debug("GET /films/{} : get film by ID", filmId);
         return filmService.getFilm(filmId);
     }
 
     @DeleteMapping("/{filmId}")
     public void deleteFilm(@PathVariable long filmId) {
-        log.debug("Delete /films/" + filmId + " : удаление данных фильма");
+        log.debug("DELETE /films/{} : delete film by ID", filmId);
         filmService.deleteFilm(filmId);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
     public void likeFilm(@PathVariable long filmId, @PathVariable long userId) {
-        log.debug("Put /films/" + filmId + "/like/" + userId + " : лайк фильму");
+        log.debug("PUT /films/{}/like/{} : create like for film from user", filmId, userId);
         filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
     public void removeLike(@PathVariable long filmId, @PathVariable long userId) {
-        log.debug("Delete /films/" + filmId + "/like/" + userId + " : снять лайк фильму");
+        log.debug("DELETE /films/{}/like/{} : delete like for film from user", filmId, userId);
         filmService.removeLike(filmId, userId);
     }
 
@@ -73,31 +72,32 @@ public class FilmController {
     public List<Film> mostLiked(@RequestParam(defaultValue = "10", required = false) int count,
                                 @RequestParam(defaultValue = "0", required = false) int genreId,
                                 @RequestParam(defaultValue = "0", required = false) int year) {
-        log.debug("Get /films/popular : запрос " + count + " популярных фильмов по жанру "
-                + genreId + "  и году " + year);
+        log.debug("GET /films/popular?count={}&genreId={}&year={} : " +
+                "get list of popular films by genre and/or year", count, genreId, year);
         return filmService.getPopular(count, genreId, year);
     }
 
     @GetMapping("/search")
-    public List<Film> searchFilm(@RequestParam(name = "query", required = false) String query, @RequestParam(name = "by", defaultValue = "title,director", required = false) String searchBy) {
+    public List<Film> searchFilm(@RequestParam(name = "query", required = false) String query,
+                                 @RequestParam(name = "by", defaultValue = "title,director", required = false)
+                                 String searchBy) {
+        log.info("GET /films/search?query={}&by={} : get films by search", query, searchBy);
         if (query == null) {
-            throw new EntityNotFoundException("отсутствует строка поиска");
+            throw new EntityNotFoundException("Missing search query");
         }
-        log.info("Поиск по запросу: {}", query);
         return filmService.searchFilm(query, searchBy);
     }
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
-        log.debug("Get /films/common?userId={userId}&friendId={friendId} " +
-                ": запрос общих фильмов у пользователей с id " +
-                userId + " и " + friendId);
+        log.debug("GET /films/common?userId={}&friendId={} : " +
+                "get list of common films of user and friend", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getDirectorsFilmSorted(@PathVariable long directorId, @RequestParam String sortBy) { //Второе изм.
-        log.debug("GET /films/director/{directorId}?sortBy=[year,likes]");
+    public List<Film> getDirectorsFilmSorted(@PathVariable long directorId, @RequestParam String sortBy) {
+        log.debug("GET /films/director/{}?sortBy={} : get list of films of director", directorId, sortBy);
         return filmService.getDirectorsFilmSorted(directorId, Enum.valueOf(SortTypes.class, sortBy.toUpperCase()));
     }
 }

@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 public class UserService {
 
     @Autowired
-    @Qualifier("UserDBStorage")
+    @Qualifier("userDBStorage")
     private UserStorage userStorage;
 
     @Autowired
-    @Qualifier("FilmDBStorage")
+    @Qualifier("filmDBStorage")
     private FilmStorage filmStorage;
 
     @Autowired
@@ -150,34 +150,34 @@ public class UserService {
     }
 
     public void userValidation(User user) {
-        log.info("Валидация данных пользователя");
+        log.info("Validation of user");
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new ValidationException("Почта не может быть пустой и должна содержать символ «@».");
+            throw new ValidationException("User's mail cannot be empty and must have the \"@\" symbol");
         }
         if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может быть пустым и не может содержать пробелы.");
+            throw new ValidationException("User's login cannot be empty and cannot contain spaces");
         }
         if (user.getName().isBlank()) {
-            log.info("Имя пользователя пустое");
+            log.info("User's name missing");
             user.setName(user.getLogin());
-            log.info("В качестве имени установлено значение логина");
+            log.info("User's login is set as user's name");
 
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть в будущем.");
+            throw new ValidationException("User's date of birth cannot be in the future.");
         }
-        log.info("Валидация пользователя пройдена");
+        log.info("Validation of user passed");
     }
 
     public void userIdValidation(long userId) {
-        log.info("Валидация данных ID пользователя");
+        log.info("Validation of user's ID");
         if (userId <= 0) {
-            throw new EntityNotFoundException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("User's ID must be greater than zero");
         }
         if (userStorage.getUser(userId) == null) {
-            throw new EntityNotFoundException("Пользователь с ID " + userId + " не существует.");
+            throw new EntityNotFoundException("User with ID " + userId + " does not exist");
         }
-        log.info("Валидация ID пользователя пройдена");
+        log.info("User's ID validation passed");
     }
 
 }

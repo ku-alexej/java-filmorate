@@ -16,7 +16,7 @@ import java.util.Optional;
 public class MpaService {
 
     @Autowired
-    @Qualifier("MpaDBStorage")
+    @Qualifier("mpaDBStorage")
     private MpaStorage mpaStorage;
 
     public List<Mpa> allMpa() {
@@ -25,7 +25,7 @@ public class MpaService {
 
     public Mpa getMpa(int mpaId) {
         return Optional.ofNullable(mpaStorage.getMpa(mpaId))
-                .orElseThrow(() -> new EntityNotFoundException("Mpa с ID " + mpaId + " не существует"));
+                .orElseThrow(() -> new EntityNotFoundException("MPA with ID " + mpaId + " does not exist"));
     }
 
 }

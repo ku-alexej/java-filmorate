@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -22,7 +23,7 @@ public class ReviewDBStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Review> getAll(Long filmId, int count) {
+    public List<Review> getReviews(Long filmId, int count) {
         final String sqlQuery;
         if (filmId == null) {
             sqlQuery = "select REVIEW_ID, CONTENT, IS_POSITIVE, USER_ID, FILM_ID " +
@@ -39,7 +40,7 @@ public class ReviewDBStorage implements ReviewStorage {
     }
 
     @Override
-    public Review addReview(Review review) {
+    public Review createReview(Review review) {
         final String sqlQuery = "insert into REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID) values (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -52,13 +53,12 @@ public class ReviewDBStorage implements ReviewStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().longValue());
-        log.debug("Новому отзыву присвоен ID: {}", review.getReviewId());
+        log.debug("New review got ID: {}", review.getReviewId());
         return review;
     }
 
     @Override
     public Review updateReview(Review review) {
-        log.debug("Обновлен отзыва с ID: {}", review.getReviewId());
         final String sqlQuery = "update REVIEWS set " +
                 "CONTENT = ?, IS_POSITIVE = ?" +
                 "where REVIEW_ID = ?";
@@ -68,6 +68,7 @@ public class ReviewDBStorage implements ReviewStorage {
                 review.getIsPositive(),
                 review.getReviewId());
 
+        log.debug("Review ID {} was updated", review.getReviewId());
         return getReview(review.getReviewId());
     }
 
@@ -76,7 +77,7 @@ public class ReviewDBStorage implements ReviewStorage {
         String sqlQuery = "delete from REVIEWS " +
                 "where REVIEW_ID = ?";
         jdbcTemplate.update(sqlQuery, reviewId);
-        log.debug("Удален отзыв с ID: {}", reviewId);
+        log.debug("Review ID {} was deleted", reviewId);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class ReviewDBStorage implements ReviewStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, reviewId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("Review with ID " + reviewId + " does not exist");
         }
     }
 
@@ -100,13 +101,14 @@ public class ReviewDBStorage implements ReviewStorage {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"REVIEWS_LIKE_ID"});
             stmt.setLong(1, reviewId);
             stmt.setLong(2, userId);
-            if (isLike)
+            if (isLike) {
                 stmt.setLong(3, 1);
-            else
+            } else {
                 stmt.setLong(3, -1);
+            }
             return stmt;
         }, keyHolder);
-        log.debug("Поставлена оценка отзыву ID {} от пользователя ID {}", reviewId, userId);
+        log.debug("Added mark from user {} for review {}", userId, reviewId);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class ReviewDBStorage implements ReviewStorage {
         String sqlQuery = "delete from REVIEWS_LIKES " +
                 "where REVIEW_ID = ? and USER_ID = ?";
         jdbcTemplate.update(sqlQuery, reviewId, userId);
-        log.debug("Удалена оценка отзыву ID {} от пользователя ID {}", reviewId, userId);
+        log.debug("Removed mark from user {} for review {}", userId, reviewId);
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
@@ -135,8 +137,9 @@ public class ReviewDBStorage implements ReviewStorage {
                 "where REVIEW_ID = ?";
 
         count = jdbcTemplate.queryForObject(sqlQuery, new Object[]{reviewId}, Long.class);
-        if (count == null)
+        if (count == null) {
             return 0;
+        }
         return count;
     }
 

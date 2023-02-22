@@ -19,15 +19,15 @@ public class MpaController {
     @Autowired
     private MpaService mpaService;
 
-    @GetMapping()
+    @GetMapping
     public List<Mpa> allMpa() {
-        log.info("Get /mpa : запрос списка возрастных рейтингов");
+        log.info("GET /mpa : get list of all MPA");
         return mpaService.allMpa();
     }
 
     @GetMapping("/{mpaId}")
     public Mpa getMpa(@PathVariable int mpaId) {
-        log.debug("Get /mpa/" + mpaId + " : запрос возрастного рейтинга");
+        log.debug("GET /mpa/{} : get MPA by ID", mpaId);
         return mpaService.getMpa(mpaId);
     }
 }

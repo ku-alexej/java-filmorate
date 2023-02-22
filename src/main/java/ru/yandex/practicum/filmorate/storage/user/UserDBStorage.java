@@ -9,13 +9,17 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @Component
-@Qualifier("UserDBStorage")
+@Qualifier("userDBStorage")
 public class UserDBStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -49,14 +53,14 @@ public class UserDBStorage implements UserStorage {
             return stmt;
         }, keyHolder);
         user.setId(keyHolder.getKey().longValue());
-        log.debug("Новому пользователю присвоен ID: {}", user.getId());
+        log.debug("New user got ID: {}", user.getId());
         return user;
     }
 
     @Override
     public User updateUser(User user) {
         changeUser(user);
-        log.debug("Обновлен пользователь с ID: {}", user.getId());
+        log.debug("User ID {} was updated", user.getId());
         return user;
     }
 
@@ -79,7 +83,7 @@ public class UserDBStorage implements UserStorage {
     public void deleteUser(long userId) {
         String sqlQuery = "delete from USERS where USER_ID = ?";
         jdbcTemplate.update(sqlQuery, userId);
-        log.debug("Удален пользователь с ID: {}", userId);
+        log.debug("User ID {} was deleted", userId);
     }
 
     @Override
@@ -93,14 +97,14 @@ public class UserDBStorage implements UserStorage {
             stmt.setLong(2, friend.getId());
             return stmt;
         }, keyHolder);
-        log.debug("Дружба добавлена");
+        log.debug("Added friend ID {} to user ID {}", friend.getId(), user.getId());
     }
 
     @Override
     public void removeFriend(long userId, long friendId) {
         String sqlQuery = "delete from FRIENDS where USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
-        log.debug("Дружба удалена");
+        log.debug("Removed friend ID {} from user ID {}", friendId, userId);
     }
 
     @Override

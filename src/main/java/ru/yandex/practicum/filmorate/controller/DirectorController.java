@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
@@ -16,37 +17,38 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequestMapping("/directors")
 @RequiredArgsConstructor
 public class DirectorController {
     private final DirectorService directorService;
 
-    @GetMapping("/directors")
+    @GetMapping
     public List<Director> findAll() {
-        log.info("Get /directors : запрос списка фильмов.");
+        log.info("GET /directors : get list of all directors");
         return directorService.getAll();
     }
 
-    @GetMapping("/directors/{id}")
+    @GetMapping("/{id}")
     public Director findById(@PathVariable Long id) {
-        log.debug("Get /directors/" + id + " : запрос режиссёра.");
+        log.debug("GET /directors/{} : get director by ID", id);
         return directorService.getById(id);
     }
 
-    @PostMapping(value = "/directors")
+    @PostMapping
     public Director create(@RequestBody Director director) {
-        log.debug("Post /directors : добавление режиссёра {}.", director);
+        log.debug("POST /directors : create director - {}", director);
         return directorService.add(director);
     }
 
-    @PutMapping(value = "/directors")
+    @PutMapping
     public Director update(@RequestBody Director director) {
-        log.debug("Put /directors : обновление данных режиссёра {}.", director);
+        log.debug("PUT /directors : update director - {}", director);
         return directorService.update(director);
     }
 
-    @DeleteMapping(value = "/directors/{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        log.debug("Delete /directors/" + id + " : удаление данных режиссёра.");
+        log.debug("DELETE /directors/{} : delete director by ID.", id);
         directorService.delete(id);
     }
 

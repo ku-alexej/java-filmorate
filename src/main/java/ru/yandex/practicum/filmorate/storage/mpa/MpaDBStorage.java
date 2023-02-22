@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Qualifier("MpaDBStorage")
+@Qualifier("mpaDBStorage")
 public class MpaDBStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;

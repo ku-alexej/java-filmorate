@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Qualifier("GenreDBStorage")
+@Qualifier("genreDBStorage")
 public class GenreDBStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;

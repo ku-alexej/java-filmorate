@@ -16,7 +16,7 @@ import java.util.Optional;
 public class GenreService {
 
     @Autowired
-    @Qualifier("GenreDBStorage")
+    @Qualifier("genreDBStorage")
     private GenreStorage genreStorage;
 
     public List<Genre> allGenre() {
@@ -25,7 +25,7 @@ public class GenreService {
 
     public Genre getGenre(int genreId) {
         return Optional.ofNullable(genreStorage.getGenre(genreId))
-                .orElseThrow(() -> new EntityNotFoundException("Жанр с ID" + genreId + " не существует"));
+                .orElseThrow(() -> new EntityNotFoundException("Genre with ID " + genreId + " does not exist"));
     }
 
 }

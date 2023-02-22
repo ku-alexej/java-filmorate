@@ -33,9 +33,9 @@ public class ReviewService {
     @Autowired
     private FeedStorage feedDBStorage;
 
-    public Review addReview(Review review) {
+    public Review createReview(Review review) {
         reviewValidation(review);
-        Review newReview = reviewStorage.addReview(review);
+        Review newReview = reviewStorage.createReview(review);
         feedDBStorage.addToFeed(newReview.getUserId(), EventType.REVIEW, FeedOperation.ADD, newReview.getReviewId());
         return newReview;
     }
@@ -60,10 +60,10 @@ public class ReviewService {
     }
 
     public List<Review> getReviews(Long filmId, int count) {
-        if (count < 0)
-            throw new ValidationException("Отрицательный размер списка.");
-
-        return reviewStorage.getAll(filmId, count).stream()
+        if (count < 0) {
+            throw new ValidationException("Count of reviews cannot be negative");
+        }
+        return reviewStorage.getReviews(filmId, count).stream()
                 .sorted(marksComparator.reversed())
                 .collect(Collectors.toList());
     }
@@ -71,36 +71,37 @@ public class ReviewService {
     public void changeMark(long reviewId, long userId, boolean isAdd, boolean isLike) {
         reviewIdValidation(reviewId);
         userService.userIdValidation(userId);
-        if (isAdd)
+        if (isAdd) {
             reviewStorage.addMark(reviewId, userId, isLike);
-        else
+        } else {
             reviewStorage.deleteMark(reviewId, userId);
+        }
     }
 
     private void reviewValidation(Review review) {
-        log.info("Валидация данных");
+        log.info("Validation of review");
         if (review.getContent() == null || review.getContent().isBlank()) {
-            throw new ValidationException("В отзыве нет контента");
+            throw new ValidationException("Review's content cannot be empty");
         }
         if (review.getIsPositive() == null) {
-            throw new ValidationException("У отзыва не указан тип");
+            throw new ValidationException("Review's type missing");
         }
         if (review.getUserId() == null) {
-            throw new ValidationException("У отзыва не указан пользователь");
+            throw new ValidationException("Review's user missing");
         }
         if (review.getFilmId() == null) {
-            throw new ValidationException("У отзыва не указан фильм");
+            throw new ValidationException("Review's film missing");
         }
         userService.userIdValidation(review.getUserId());
         filmService.filmIdValidation(review.getFilmId());
-        log.info("Валидация пройдена");
+        log.info("Validation of review passed");
     }
 
     private void reviewIdValidation(long reviewId) {
-        log.info("Валидация данных ID отзыва");
-        if (reviewId <= 0 || reviewStorage.getReview(reviewId) == null) {
-            throw new EntityNotFoundException("Отзыв с ID " + reviewId + " не существует.");
+        log.info("Validation of review's ID");
+        if (reviewId <= 0) {
+            throw new EntityNotFoundException("Review's ID must be greater than zero");
         }
-        log.info("Валидация ID отзыва пройдена");
+        log.info("Review's ID validation passed");
     }
 }

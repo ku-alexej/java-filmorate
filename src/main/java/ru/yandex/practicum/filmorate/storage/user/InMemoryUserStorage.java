@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 @Data
 @Component
-@Qualifier("InMemoryUserStorage")
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private Map<Long, User> users = new HashMap<>();
@@ -29,9 +29,9 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addUser(User user) {
         user.setId(userId);
-        log.debug("Новому пользователю присвоен ID: {}", user.getId());
+        log.debug("New user got ID: {}", user.getId());
         users.put(userId, user);
-        log.debug("Пользователь сохранен, в базе {} пользователей", users.size());
+        log.debug("{} user(s) in memory", users.size());
         userId++;
         return user;
     }
@@ -42,8 +42,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(user.getId())) {
             updatedUser = changeUser(user);
         } else {
-            log.warn("Пользователь не найден");
-            throw new ValidationException("Пользователь не найден.");
+            throw new ValidationException("User with ID " + user.getId() + " does not exist");
         }
         return updatedUser;
     }
@@ -65,7 +64,8 @@ public class InMemoryUserStorage implements UserStorage {
             users.get(userId).getFriendsId().remove(friendId);
             users.get(friendId).getFriendsId().remove(userId);
         } else {
-            throw new ValidationException("Проверьте ID пользователя и друга.");
+            throw new ValidationException("User with ID " + userId +
+                    " and/or friend with ID " + friendId + " does not exist");
         }
     }
 
@@ -88,7 +88,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User changeUser(User user) {
         users.put(user.getId(), user);
-        log.info("Данные пользователя обновлены");
+        log.info("User with ID {} was updated", user.getId());
         return user;
     }
 

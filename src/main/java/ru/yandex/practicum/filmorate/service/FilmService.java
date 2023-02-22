@@ -30,7 +30,7 @@ public class FilmService {
 
 
     @Autowired
-    @Qualifier("FilmDBStorage")
+    @Qualifier("filmDBStorage")
     private FilmStorage filmStorage;
 
     @Autowired
@@ -102,31 +102,31 @@ public class FilmService {
     }
 
     public void filmValidation(Film film) {
-        log.info("Валидация данных");
+        log.info("Validation of film");
         if (film.getName().isBlank()) {
-            throw new ValidationException("Название фильма не может быть пустым.");
+            throw new ValidationException("Film's name missing");
         }
         if (film.getDescription().length() > MAX_FILM_DESCRIPTION) {
-            throw new ValidationException("Описание фильма больше " + MAX_FILM_DESCRIPTION + " символов.");
+            throw new ValidationException("Film's description is longer than " + MAX_FILM_DESCRIPTION + " characters");
         }
         if (film.getReleaseDate().isBefore(FIRST_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза не может быть раньше " + FIRST_RELEASE_DATE + ".");
+            throw new ValidationException("Film's release date cannot be earlier than " + FIRST_RELEASE_DATE);
         }
         if (film.getDuration() < 0) {
-            throw new ValidationException("Продолжительность фильма не может быть отрицательной.");
+            throw new ValidationException("Film's duration cannot be negative");
         }
-        log.info("Валидация пройдена");
+        log.info("Validation of film passed");
     }
 
     public void filmIdValidation(long filmId) {
-        log.info("Валидация данных ID фильма");
+        log.info("Validation of film ID");
         if (filmId <= 0) {
-            throw new EntityNotFoundException("ID должен быть больше нуля.");
+            throw new EntityNotFoundException("Film's ID must be greater than zero");
         }
         if (filmStorage.getFilm(filmId) == null) {
-            throw new EntityNotFoundException("Фильм с ID " + filmId + " не существует.");
+            throw new EntityNotFoundException("Film with ID " + filmId + " does not exist");
         }
-        log.info("Валидация ID фильма пройдена");
+        log.info("Film's ID validation passed");
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
@@ -147,7 +147,7 @@ public class FilmService {
                         .sorted(releaseDateComparator)
                         .collect(Collectors.toList());
             default:
-                throw new EntityNotFoundException("Тип сортировки не найден.");
+                throw new EntityNotFoundException("Sort type does not exist or missing");
         }
     }
 }

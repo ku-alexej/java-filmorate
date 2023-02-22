@@ -8,6 +8,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -25,8 +26,8 @@ public class Film {
     private int duration;
     private Integer rate;
     private Mpa mpa;
-    private Set<Genre> genres;
-    private Set<Director> directors;
+    private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
     @JsonIgnore
-    private Set<Long> usersId;
+    private Set<Long> usersId = new HashSet<>();
 }
