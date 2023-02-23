@@ -102,6 +102,7 @@ public class ReviewService {
         if (reviewId <= 0) {
             throw new EntityNotFoundException("Review's ID must be greater than zero");
         }
+        reviewStorage.getReview(reviewId);
         log.info("Review's ID validation passed");
     }
 }

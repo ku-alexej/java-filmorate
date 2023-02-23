@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -127,7 +128,7 @@ public class UserDBStorage implements UserStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, userId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("User with ID " + userId + " does not exist");
         }
     }
 

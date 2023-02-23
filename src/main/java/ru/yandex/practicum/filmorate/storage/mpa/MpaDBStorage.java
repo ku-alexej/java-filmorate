@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
@@ -41,7 +42,7 @@ public class MpaDBStorage implements MpaStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, mpaId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("MPA with ID " + mpaId + " does not exist");
         }
     }
 

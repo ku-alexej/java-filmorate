@@ -174,9 +174,7 @@ public class UserService {
         if (userId <= 0) {
             throw new EntityNotFoundException("User's ID must be greater than zero");
         }
-        if (userStorage.getUser(userId) == null) {
-            throw new EntityNotFoundException("User with ID " + userId + " does not exist");
-        }
+        userStorage.getUser(userId);
         log.info("User's ID validation passed");
     }
 

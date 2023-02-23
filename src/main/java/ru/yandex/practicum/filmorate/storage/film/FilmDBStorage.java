@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -279,7 +280,7 @@ public class FilmDBStorage implements FilmStorage {
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            return List.of();
         }
     }
 
@@ -290,7 +291,7 @@ public class FilmDBStorage implements FilmStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, filmId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("Film with ID " + filmId + " does not exist");
         }
     }
 
@@ -300,8 +301,8 @@ public class FilmDBStorage implements FilmStorage {
         String sqlQuery = "SELECT f.* FROM FILMS f " +
                 "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
                 "LEFT JOIN FILMS_DIRECTORS fd  ON f.FILM_ID = fd.FILM_ID " +
-                "LEFT JOIN DIRECTORS d2 ON fd.DIRECTOR_ID = d2.ID " +
-                "WHERE LOWER(d2.NAME) LIKE LOWER(?) OR LOWER(f.FILM_NAME) LIKE LOWER(?) " +
+                "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.ID " +
+                "WHERE LOWER(d.NAME) LIKE LOWER(?) OR LOWER(f.FILM_NAME) LIKE LOWER(?) " +
                 "GROUP BY f.FILM_ID " +
                 "ORDER BY COUNT(l.USER_ID) DESC";
         if (searchByName == searchByDirector) {

@@ -54,9 +54,7 @@ public class DirectorService {
         if (id <= 0) {
             throw new EntityNotFoundException("Director's ID must be greater than zero");
         }
-        if (directorStorage.getById(id) == null) {
-            throw new EntityNotFoundException("Director with ID " + id + " does not exist");
-        }
+        directorStorage.getById(id);
         log.info("Director's ID validation passed");
     }
 

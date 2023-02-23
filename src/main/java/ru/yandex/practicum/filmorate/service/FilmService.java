@@ -123,9 +123,7 @@ public class FilmService {
         if (filmId <= 0) {
             throw new EntityNotFoundException("Film's ID must be greater than zero");
         }
-        if (filmStorage.getFilm(filmId) == null) {
-            throw new EntityNotFoundException("Film with ID " + filmId + " does not exist");
-        }
+        filmStorage.getFilm(filmId);
         log.info("Film's ID validation passed");
     }
 
