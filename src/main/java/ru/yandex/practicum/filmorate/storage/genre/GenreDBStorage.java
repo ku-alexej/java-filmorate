@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Qualifier("GenreDBStorage")
+@Qualifier("genreDBStorage")
 public class GenreDBStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -41,7 +42,7 @@ public class GenreDBStorage implements GenreStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, genreId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("Genre with ID " + genreId + " does not exist");
         }
     }
 

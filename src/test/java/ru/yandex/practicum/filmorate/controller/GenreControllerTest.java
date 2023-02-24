@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.GenreService;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,8 +22,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:data.sql")
 class GenreControllerTest {
 
-    @Autowired
-    private GenreService genreService;
     @Autowired
     private TestRestTemplate restTemplate;
 

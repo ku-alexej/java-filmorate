@@ -7,15 +7,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @Component
-@Qualifier("UserDBStorage")
+@Qualifier("userDBStorage")
 public class UserDBStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -49,14 +54,14 @@ public class UserDBStorage implements UserStorage {
             return stmt;
         }, keyHolder);
         user.setId(keyHolder.getKey().longValue());
-        log.debug("Новому пользователю присвоен ID: {}", user.getId());
+        log.debug("New user got ID: {}", user.getId());
         return user;
     }
 
     @Override
     public User updateUser(User user) {
         changeUser(user);
-        log.debug("Обновлен пользователь с ID: {}", user.getId());
+        log.debug("User ID {} was updated", user.getId());
         return user;
     }
 
@@ -76,17 +81,10 @@ public class UserDBStorage implements UserStorage {
     }
 
     @Override
-    public long deleteUser(long userId) {
+    public void deleteUser(long userId) {
         String sqlQuery = "delete from USERS where USER_ID = ?";
         jdbcTemplate.update(sqlQuery, userId);
-        log.debug("Удален пользователь с ID: {}", userId);
-        sqlQuery = "delete from LIKES where USER_ID = ?";
-        jdbcTemplate.update(sqlQuery, userId);
-        log.debug("Удалены лайки пользователя с ID: {}", userId);
-        sqlQuery = "delete from FRIENDS where USER_ID = ? or FRIEND_ID = ?";
-        jdbcTemplate.update(sqlQuery, userId, userId);
-        log.debug("Удалена дружба с пользователем с ID: {}", userId);
-        return userId;
+        log.debug("User ID {} was deleted", userId);
     }
 
     @Override
@@ -100,21 +98,21 @@ public class UserDBStorage implements UserStorage {
             stmt.setLong(2, friend.getId());
             return stmt;
         }, keyHolder);
-        log.debug("Дружба добавлена");
+        log.debug("Added friend ID {} to user ID {}", friend.getId(), user.getId());
     }
 
     @Override
     public void removeFriend(long userId, long friendId) {
         String sqlQuery = "delete from FRIENDS where USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
-        log.debug("Дружба удалена");
+        log.debug("Removed friend ID {} from user ID {}", friendId, userId);
     }
 
     @Override
     public List<User> getFriends(long userId) {
         String sqlQuery = "select FRIEND_ID as USER_ID, EMAIL, LOGIN, USER_NAME, BIRTHDAY " +
-                        "from USERS as U join FRIENDS F on U.USER_ID = F.FRIEND_ID " +
-                        "where F.USER_ID = ?";
+                "from USERS as U join FRIENDS F on U.USER_ID = F.FRIEND_ID " +
+                "where F.USER_ID = ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, userId);
     }
 
@@ -130,7 +128,7 @@ public class UserDBStorage implements UserStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, userId);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            throw new EntityNotFoundException("User with ID " + userId + " does not exist");
         }
     }
 

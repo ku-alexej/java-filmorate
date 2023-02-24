@@ -19,15 +19,15 @@ public class GenreController {
     @Autowired
     private GenreService genreService;
 
-    @GetMapping()
+    @GetMapping
     public List<Genre> allGenre() {
-        log.info("Get /genres : запрос списка жанров");
+        log.info("GET /genres : get list of all genres");
         return genreService.allGenre();
     }
 
     @GetMapping("/{genreId}")
     public Genre getGenre(@PathVariable int genreId) {
-        log.debug("Get /genres/" + genreId + " : запрос жанра");
+        log.debug("GET /genres/{} : get genre by ID", genreId);
         return genreService.getGenre(genreId);
     }
 }

@@ -2,7 +2,16 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -16,58 +25,69 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping()
+    @GetMapping
     public List<User> allUsers() {
-        log.info("Get /users : запрос списка пользователей");
+        log.info("GET /users : get list of all users");
         return userService.allUsers();
     }
 
     @GetMapping("/{userId}")
     public User getUsers(@PathVariable long userId) {
-        log.debug("Get /users/" + userId + " : запрос данных пользователя");
+        log.debug("GET /users/{} : get user by ID", userId);
         return userService.getUser(userId);
     }
 
-    @PostMapping()
+    @PostMapping
     public User addUser(@RequestBody User user) {
-        log.debug("Post /users : добавление пользователя {}", user);
+        log.debug("POST /users : create user - {}", user);
         return userService.addUser(user);
     }
 
-    @PutMapping()
+    @PutMapping
     public User updateUser(@RequestBody User user) {
-        log.debug("Put /users : обновление данных пользователя {}", user);
+        log.debug("PUT /users : update user - {}", user);
         return userService.updateUser(user);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
     public void addFriend(@PathVariable long userId, @PathVariable long friendId) {
-        log.debug("Put /users/" + userId + "/friends/" + friendId + " : добавление в друзья");
+        log.debug("PUT /users/{}/friends/{} : user add friend", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
     @GetMapping("/{userId}/friends")
     public List<User> getFriends(@PathVariable long userId) {
-        log.debug("Get /users/" + userId + " : получение списка друзей");
+        log.debug("GET /users/{}/friends : get list of user's friends", userId);
         return userService.getUserFriends(userId);
     }
 
     @GetMapping("/{userId}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable long userId, @PathVariable long otherId) {
-        log.debug("Get /users/" + userId + "/friends/common/" + otherId + " : получение общих друзей");
+        log.debug("GET /users/{}/friends/common/{} : get list of common friends", userId, otherId);
         return userService.mutualFriends(userId, otherId);
     }
 
-    @DeleteMapping("/{userID}")
-    public long deleteUser(@PathVariable long userId) {
-        log.debug("Delete /users/" + userId + " : удаление данных пользователя");
-        return userService.deleteUser(userId);
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable long userId) {
+        log.debug("DELETE /users/{} : delete user by ID", userId);
+        userService.deleteUser(userId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
     public void removeFriend(@PathVariable long userId, @PathVariable long friendId) {
-        log.debug("Post /users/" + userId + "/friends/" + friendId + " : удаление из друзей");
+        log.debug("DELETE /users/{}/friends/{} : delete friend", userId, friendId);
         userService.removeFriend(userId, friendId);
     }
 
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long userId) {
+        log.debug("GET /users/{}/recommendations : get list of films recommended by user", userId);
+        return userService.getRecommendations(userId);
+    }
+
+    @GetMapping("/{userId}/feed")
+    public List<Feed> getFeedByUserId(@PathVariable long userId) {
+        log.debug("GET /users/{}/feed : get list of feeds of user", userId);
+        return userService.getFeedByUserId(userId);
+    }
 }

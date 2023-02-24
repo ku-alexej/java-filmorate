@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @AutoConfigureTestDatabase
 class FilmorateApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 }

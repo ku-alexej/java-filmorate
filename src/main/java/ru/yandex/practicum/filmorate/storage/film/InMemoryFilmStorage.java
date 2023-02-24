@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,10 +13,10 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@Qualifier("InMemoryFilmStorage")
+@Qualifier("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
     private long filmId = 1;
 
     @Override
@@ -28,9 +27,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         film.setId(filmId);
-        log.debug("Новому фильму присвоен ID: {}", film.getId());
+        log.debug("New film got ID: {}", film.getId());
         films.put(filmId, film);
-        log.debug("Фильм сохранен, в базе {} фильмов", films.size());
+        log.debug("{} film(s) in memory", films.size());
         filmId++;
         return film;
     }
@@ -41,8 +40,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(film.getId())) {
             updatedFilm = changeFilm(film);
         } else {
-            log.warn("Фильм не найден");
-            throw new ValidationException("Фильм не найден.");
+            throw new ValidationException("Film with ID " + film.getId() + " does not exist");
         }
         return updatedFilm;
     }
@@ -50,7 +48,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film changeFilm(Film film) {
         films.put(film.getId(), film);
-        log.info("Данные фильма обновлены");
+        log.debug("Film with ID {} was updated", film.getId());
         return film;
     }
 
@@ -71,12 +69,47 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(long count) {
-        return null;
+        return List.of();
     }
 
     @Override
     public Film getFilm(long filmId) {
         return films.get(filmId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getLikedFilm(long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getPopularByGenre(int genreId, int count) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getPopularByYear(int year, int count) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getPopularByGenreAndYear(int genreId, int year, int count) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> allDirectorsFilms(long directorId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> searchFilm(String searchQuery, boolean searchByName, boolean searchByDirector) {
+        return List.of();
     }
 
 }
